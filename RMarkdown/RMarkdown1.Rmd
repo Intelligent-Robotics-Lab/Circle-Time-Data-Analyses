@@ -1,0 +1,714 @@
+---
+title: "CircleTime Data Analyses"
+author: "Pourya Shahverdi"
+date: "`r Sys.Date()`"
+output:
+  html_document: 
+    toc: yes
+    toc_depth: 4
+  #pdf_document: default
+---
+# About the Study #
+
+## Introduction to Circle-Time ##
+
+Circle-time is a group activity based on Applied Behavior Analysis (ABA) for children with Autism Spectrum Disorder (ASD) to prepare them for attending in traditional classroom activities alongside neurotically developed children. In circle-time, children sit together semicircular, and an instructor give them group instruction activities such as dance, yoga, labeling animals, finding objects, etc. The goal of circle-time is to improve children's learning behaviors, which are:
+
+* Affect
+* Communication
+* Engagement
+* Performance
+
+In this study, we evaluate the efficacy of a social robot in delivering group instruction activities to children with ASD. Throughout the six month of experiment, Six children participants received 10 sessions of group instructions from a human instructor and 10 sessions from a Pepper humanoid social robot as a within-subject study design. To compare children learning behaviors between the human and the robot instructor conditions their activities were video recorded and coded for the sessions 1, 4, 7, and 10.
+
+## Research Questions ##
+
+In this research, we address the following research questions:
+
+1. How learning behaviors (Affect, Communication, Engagement, Performance) differ between conditions (Human, Robot)?
+2. How is the interaction between learning behaviors (Affect, Communication, Engagement, Performance) and time (Session Number)?
+3. How is the interaction between different learning behaviors (Affect, Communication, Engagement, Performance)?
+4. Between the Affect, Communication, and Engagement learning behaviors, which one is more effective on the Performance learning behavior (increasing performance is considered as the main objective)?
+
+
+
+
+## Study Design ##
+
+For this longitudinal within-subject study with 6 participants we defined the following variables:
+
+#### Independent Variables ####
+
+* Instructor Conditions:
+
+  * Human ~ 1
+  * Robot ~ 2
+
+* Time
+  * Session 1  ~ 1
+  * Session 4  ~ 2
+  * Session 7  ~ 3
+  * Session 10 ~ 4
+  
+
+#### Dependent Variables ####
+
+* Affect
+* Communication
+* Engagement
+* Performance
+
+
+### Data Collection ###
+The evaluation of the learning behavior is based on the following metrics:
+
+#### Affect #### 
+children's happiness level was defined as:
+
+* Positive 
+* Negative 
+* Neutral
+
+A video was divided into 10 seconds intervals, and a human coder, focusing on one child in the group, labeled that interval as Positive if the child was happy, Negative if they was sad, and Neutral if they was neither happy or sad. Percentage of each measurement is used for analysis.
+
+#### Communication ####
+Communication of the children was coded into 4 categories. Communication with:
+
+* Instructor
+* Instructor-Prompted
+* Behavior Therapist (BT) or peers
+* Indeterminate
+
+#### Engagement ####
+Engagement was coded into 3 categories. Engagement with:
+
+* Instructor or screen (On Target)
+* BT or peers
+* Off Target
+
+#### Performance ####
+Children's performance was coded into two categories:
+
+* Positive
+* Negative
+
+
+#### Inter-observer Agreement (IoA) ####
+At the beginning of the coding procedure, coders' understanding of the metrics had to be on the same page. We used Cohen's Kappa score to evaluate the IoA on the coding procedure. An individual coder was allowed to code independently only if their Cohen's Kappa IioA score was higher than 80%. All session ones and tens were double coded as well as the 30% of the session fours and sevens. For the sessions with lower than 80% agreement, coders went through coding together and came up with 100% agreement. We considered this conservative approach since we were looking into the highest reliability of data on our 6 participants.
+
+
+# Data Analysis #
+
+In order to investigate the research questions, we analyze the data from children's learning behaviors as follows:
+
+## Affect ##
+We use a Linear Mixed-Effect Model to analyze the Affect metric.
+
+### Affect Positive ###
+
+```{r}
+library(readr)
+library(lme4)
+
+CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+
+# Fit a mixed-effects model
+df <- CircleTimeData
+model <- lmer(Affect_Positive ~ Condition * time + (1 | Subject), data = df)
+summary(model)
+
+
+
+summary_table <- summary(model)$coefficients
+t_values <- summary_table[, "t value"]
+
+# Number of observations
+num_obs <- nobs(model)
+
+
+for (i in seq_along(t_values)) {
+  # Extract t-value for the term
+  t_value <- t_values[i]
+  num_obs_term <- num_obs
+
+  # Calculate p-value using t-value and degrees of freedom
+  df <- num_obs_term - 1  # degrees of freedom for a fixed effect
+  p_value <- 2 * (1 - pt(abs(t_value), df))
+
+  # Print or use the results as needed
+  cat("Term:", names(t_values)[i], "\n")
+  cat("  T-value:", t_value, "\n")
+  cat("  Number of Observations:", num_obs_term, "\n")
+  cat("  P-value:", p_value, "\n\n")
+}
+
+
+plot(model)
+
+# Shapiro-Wilk test for normality
+shapiro.test(residuals(model))
+
+
+```
+
+### Affect Negative ###
+
+```{r}
+library(readr)
+library(lme4)
+
+CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+
+# View(CircleTimeData)
+# head(CircleTimeData)
+
+# Fit a mixed-effects model
+
+df <- CircleTimeData
+# spec(df)
+model <- lmer(Affect_Negative ~ Condition * time + (1 | Subject), data = df)
+summary(model)
+
+
+summary_table <- summary(model)$coefficients
+t_values <- summary_table[, "t value"]
+
+# Number of observations
+num_obs <- nobs(model)
+
+
+for (i in seq_along(t_values)) {
+  # Extract t-value for the term
+  t_value <- t_values[i]
+  num_obs_term <- num_obs
+
+  # Calculate p-value using t-value and degrees of freedom
+  df <- num_obs_term - 1  # degrees of freedom for a fixed effect
+  p_value <- 2 * (1 - pt(abs(t_value), df))
+
+  # Print or use the results as needed
+  cat("Term:", names(t_values)[i], "\n")
+  cat("  T-value:", t_value, "\n")
+  cat("  Number of Observations:", num_obs_term, "\n")
+  cat("  P-value:", p_value, "\n\n")
+}
+
+
+plot(model)
+
+# Shapiro-Wilk test for normality
+shapiro.test(residuals(model))
+
+```
+
+
+### Affect Neutral ###
+
+```{r}
+library(readr)
+library(lme4)
+
+CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+
+# View(CircleTimeData)
+# head(CircleTimeData)
+
+# Fit a mixed-effects model
+
+df <- CircleTimeData
+# spec(df)
+model <- lmer(Affect_Neutral ~ Condition * time + (1 | Subject), data = df)
+summary(model)
+
+
+
+summary_table <- summary(model)$coefficients
+t_values <- summary_table[, "t value"]
+
+# Number of observations
+num_obs <- nobs(model)
+
+
+for (i in seq_along(t_values)) {
+  # Extract t-value for the term
+  t_value <- t_values[i]
+  num_obs_term <- num_obs
+
+  # Calculate p-value using t-value and degrees of freedom
+  df <- num_obs_term - 1  # degrees of freedom for a fixed effect
+  p_value <- 2 * (1 - pt(abs(t_value), df))
+
+  # Print or use the results as needed
+  cat("Term:", names(t_values)[i], "\n")
+  cat("  T-value:", t_value, "\n")
+  cat("  Number of Observations:", num_obs_term, "\n")
+  cat("  P-value:", p_value, "\n\n")
+}
+
+
+plot(model)
+
+# Shapiro-Wilk test for normality
+shapiro.test(residuals(model))
+
+```
+
+## Communication ##
+
+### Communication with Instructor ###
+
+```{r}
+library(readr)
+library(lme4)
+
+CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+
+# View(CircleTimeData)
+# head(CircleTimeData)
+
+# Fit a mixed-effects model
+
+df <- CircleTimeData
+# spec(df)
+model <- lmer(Communication_with_Instructor ~ Condition * time + (1 | Subject), data = df)
+summary(model)
+
+
+
+summary_table <- summary(model)$coefficients
+t_values <- summary_table[, "t value"]
+
+# Number of observations
+num_obs <- nobs(model)
+
+
+for (i in seq_along(t_values)) {
+  # Extract t-value for the term
+  t_value <- t_values[i]
+  num_obs_term <- num_obs
+
+  # Calculate p-value using t-value and degrees of freedom
+  df <- num_obs_term - 1  # degrees of freedom for a fixed effect
+  p_value <- 2 * (1 - pt(abs(t_value), df))
+
+  # Print or use the results as needed
+  cat("Term:", names(t_values)[i], "\n")
+  cat("  T-value:", t_value, "\n")
+  cat("  Number of Observations:", num_obs_term, "\n")
+  cat("  P-value:", p_value, "\n\n")
+}
+
+
+plot(model)
+
+# Shapiro-Wilk test for normality
+shapiro.test(residuals(model))
+
+```
+### Communication with Instructor Prompted ###
+
+```{r}
+library(readr)
+library(lme4)
+
+CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+
+# View(CircleTimeData)
+# head(CircleTimeData)
+
+# Fit a mixed-effects model
+
+df <- CircleTimeData
+# spec(df)
+model <- lmer(Communication_with_Instructor_Prompted ~ Condition * time + (1 | Subject), data = df)
+summary(model)
+
+
+summary_table <- summary(model)$coefficients
+t_values <- summary_table[, "t value"]
+
+# Number of observations
+num_obs <- nobs(model)
+
+
+for (i in seq_along(t_values)) {
+  # Extract t-value for the term
+  t_value <- t_values[i]
+  num_obs_term <- num_obs
+
+  # Calculate p-value using t-value and degrees of freedom
+  df <- num_obs_term - 1  # degrees of freedom for a fixed effect
+  p_value <- 2 * (1 - pt(abs(t_value), df))
+
+  # Print or use the results as needed
+  cat("Term:", names(t_values)[i], "\n")
+  cat("  T-value:", t_value, "\n")
+  cat("  Number of Observations:", num_obs_term, "\n")
+  cat("  P-value:", p_value, "\n\n")
+}
+
+
+plot(model)
+
+# Shapiro-Wilk test for normality
+shapiro.test(residuals(model))
+
+```
+
+### Communication with Therapist ###
+
+```{r}
+library(readr)
+library(lme4)
+
+CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+
+# View(CircleTimeData)
+# head(CircleTimeData)
+
+# Fit a mixed-effects model
+
+df <- CircleTimeData
+# spec(df)
+model <- lmer(Communication_with_Therapist ~ Condition * time + (1 | Subject), data = df)
+summary(model)
+
+
+summary_table <- summary(model)$coefficients
+t_values <- summary_table[, "t value"]
+
+# Number of observations
+num_obs <- nobs(model)
+
+
+for (i in seq_along(t_values)) {
+  # Extract t-value for the term
+  t_value <- t_values[i]
+  num_obs_term <- num_obs
+
+  # Calculate p-value using t-value and degrees of freedom
+  df <- num_obs_term - 1  # degrees of freedom for a fixed effect
+  p_value <- 2 * (1 - pt(abs(t_value), df))
+
+  # Print or use the results as needed
+  cat("Term:", names(t_values)[i], "\n")
+  cat("  T-value:", t_value, "\n")
+  cat("  Number of Observations:", num_obs_term, "\n")
+  cat("  P-value:", p_value, "\n\n")
+}
+
+
+plot(model)
+
+# Shapiro-Wilk test for normality
+shapiro.test(residuals(model))
+
+```
+
+### Communication with Indeterminate ###
+
+```{r}
+library(readr)
+library(lme4)
+
+CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+
+# View(CircleTimeData)
+# head(CircleTimeData)
+
+# Fit a mixed-effects model
+
+df <- CircleTimeData
+# spec(df)
+model <- lmer(Communication_with_Indeterminent ~ Condition * time + (1 | Subject), data = df)
+summary(model)
+
+
+
+summary_table <- summary(model)$coefficients
+t_values <- summary_table[, "t value"]
+
+# Number of observations
+num_obs <- nobs(model)
+
+
+for (i in seq_along(t_values)) {
+  # Extract t-value for the term
+  t_value <- t_values[i]
+  num_obs_term <- num_obs
+
+  # Calculate p-value using t-value and degrees of freedom
+  df <- num_obs_term - 1  # degrees of freedom for a fixed effect
+  p_value <- 2 * (1 - pt(abs(t_value), df))
+
+  # Print or use the results as needed
+  cat("Term:", names(t_values)[i], "\n")
+  cat("  T-value:", t_value, "\n")
+  cat("  Number of Observations:", num_obs_term, "\n")
+  cat("  P-value:", p_value, "\n\n")
+}
+
+
+plot(model)
+
+# Shapiro-Wilk test for normality
+shapiro.test(residuals(model))
+
+```
+## Engagement ##
+### Engagement with On Target ###
+
+```{r}
+library(readr)
+library(lme4)
+
+CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+
+# View(CircleTimeData)
+# head(CircleTimeData)
+
+# Fit a mixed-effects model
+
+df <- CircleTimeData
+# spec(df)
+model <- lmer(Engagement_OnTarget ~ Condition * time + (1 | Subject), data = df)
+summary(model)
+
+
+
+summary_table <- summary(model)$coefficients
+t_values <- summary_table[, "t value"]
+
+# Number of observations
+num_obs <- nobs(model)
+
+
+for (i in seq_along(t_values)) {
+  # Extract t-value for the term
+  t_value <- t_values[i]
+  num_obs_term <- num_obs
+
+  # Calculate p-value using t-value and degrees of freedom
+  df <- num_obs_term - 1  # degrees of freedom for a fixed effect
+  p_value <- 2 * (1 - pt(abs(t_value), df))
+
+  # Print or use the results as needed
+  cat("Term:", names(t_values)[i], "\n")
+  cat("  T-value:", t_value, "\n")
+  cat("  Number of Observations:", num_obs_term, "\n")
+  cat("  P-value:", p_value, "\n\n")
+}
+
+
+plot(model)
+
+# Shapiro-Wilk test for normality
+shapiro.test(residuals(model))
+
+```
+
+### Engagement with Therapist ###
+
+```{r}
+library(readr)
+library(lme4)
+
+CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+
+# View(CircleTimeData)
+# head(CircleTimeData)
+
+# Fit a mixed-effects model
+
+df <- CircleTimeData
+# spec(df)
+model <- lmer(Engagement_Therapist ~ Condition * time + (1 | Subject), data = df)
+summary(model)
+
+
+
+summary_table <- summary(model)$coefficients
+t_values <- summary_table[, "t value"]
+
+# Number of observations
+num_obs <- nobs(model)
+
+
+for (i in seq_along(t_values)) {
+  # Extract t-value for the term
+  t_value <- t_values[i]
+  num_obs_term <- num_obs
+
+  # Calculate p-value using t-value and degrees of freedom
+  df <- num_obs_term - 1  # degrees of freedom for a fixed effect
+  p_value <- 2 * (1 - pt(abs(t_value), df))
+
+  # Print or use the results as needed
+  cat("Term:", names(t_values)[i], "\n")
+  cat("  T-value:", t_value, "\n")
+  cat("  Number of Observations:", num_obs_term, "\n")
+  cat("  P-value:", p_value, "\n\n")
+}
+
+
+plot(model)
+
+# Shapiro-Wilk test for normality
+shapiro.test(residuals(model))
+
+```
+
+### Engagement with OffTarget ###
+
+```{r}
+library(readr)
+library(lme4)
+
+CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+
+# View(CircleTimeData)
+# head(CircleTimeData)
+
+# Fit a mixed-effects model
+
+df <- CircleTimeData
+# spec(df)
+model <- lmer(Engagement_OffTarget ~ Condition * time + (1 | Subject), data = df)
+summary(model)
+
+
+
+summary_table <- summary(model)$coefficients
+t_values <- summary_table[, "t value"]
+
+# Number of observations
+num_obs <- nobs(model)
+
+
+for (i in seq_along(t_values)) {
+  # Extract t-value for the term
+  t_value <- t_values[i]
+  num_obs_term <- num_obs
+
+  # Calculate p-value using t-value and degrees of freedom
+  df <- num_obs_term - 1  # degrees of freedom for a fixed effect
+  p_value <- 2 * (1 - pt(abs(t_value), df))
+
+  # Print or use the results as needed
+  cat("Term:", names(t_values)[i], "\n")
+  cat("  T-value:", t_value, "\n")
+  cat("  Number of Observations:", num_obs_term, "\n")
+  cat("  P-value:", p_value, "\n\n")
+}
+
+
+plot(model)
+
+# Shapiro-Wilk test for normality
+shapiro.test(residuals(model))
+
+```
+
+## Performance ##
+
+### Performance Positive ###
+
+```{r}
+library(readr)
+library(lme4)
+
+CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+
+# View(CircleTimeData)
+# head(CircleTimeData)
+
+# Fit a mixed-effects model
+
+df <- CircleTimeData
+# spec(df)
+model <- lmer(Performance_Positive ~ Condition * time + (1 | Subject), data = df)
+summary(model)
+
+
+
+summary_table <- summary(model)$coefficients
+t_values <- summary_table[, "t value"]
+
+# Number of observations
+num_obs <- nobs(model)
+
+
+for (i in seq_along(t_values)) {
+  # Extract t-value for the term
+  t_value <- t_values[i]
+  num_obs_term <- num_obs
+
+  # Calculate p-value using t-value and degrees of freedom
+  df <- num_obs_term - 1  # degrees of freedom for a fixed effect
+  p_value <- 2 * (1 - pt(abs(t_value), df))
+
+  # Print or use the results as needed
+  cat("Term:", names(t_values)[i], "\n")
+  cat("  T-value:", t_value, "\n")
+  cat("  Number of Observations:", num_obs_term, "\n")
+  cat("  P-value:", p_value, "\n\n")
+}
+
+
+plot(model)
+
+# Shapiro-Wilk test for normality
+shapiro.test(residuals(model))
+
+```
+
+### Performance Negative ###
+
+```{r}
+library(readr)
+library(lme4)
+
+CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+
+# View(CircleTimeData)
+# head(CircleTimeData)
+
+# Fit a mixed-effects model
+
+df <- CircleTimeData
+# spec(df)
+model <- lmer(Performance_Negative ~ Condition * time + (1 | Subject), data = df)
+summary(model)
+
+plot(model)
+
+
+
+summary_table <- summary(model)$coefficients
+t_values <- summary_table[, "t value"]
+
+# Number of observations
+num_obs <- nobs(model)
+
+
+for (i in seq_along(t_values)) {
+  # Extract t-value for the term
+  t_value <- t_values[i]
+  num_obs_term <- num_obs
+
+  # Calculate p-value using t-value and degrees of freedom
+  df <- num_obs_term - 1  # degrees of freedom for a fixed effect
+  p_value <- 2 * (1 - pt(abs(t_value), df))
+
+  # Print or use the results as needed
+  cat("Term:", names(t_values)[i], "\n")
+  cat("  T-value:", t_value, "\n")
+  cat("  Number of Observations:", num_obs_term, "\n")
+  cat("  P-value:", p_value, "\n\n")
+}
+
+
+# Shapiro-Wilk test for normality
+shapiro.test(residuals(model))
+
+```

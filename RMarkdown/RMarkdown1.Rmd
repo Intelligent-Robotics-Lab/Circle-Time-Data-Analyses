@@ -3,10 +3,13 @@ title: "CircleTime Data Analyses"
 author: "Pourya Shahverdi"
 date: "`r Sys.Date()`"
 output:
+  pdf_document: 
+    toc: yes
+    toc_depth: 4
+    number_sections: yes
   html_document: 
     toc: yes
     toc_depth: 4
-  pdf_document: default
 ---
 # About the Study #
 

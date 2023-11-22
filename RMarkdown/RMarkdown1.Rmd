@@ -6,7 +6,7 @@ output:
   html_document: 
     toc: yes
     toc_depth: 4
-  #pdf_document: default
+  pdf_document: default
 ---
 # About the Study #
 

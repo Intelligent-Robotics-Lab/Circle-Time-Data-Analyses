@@ -112,15 +112,20 @@ We use a Linear Mixed-Effect Model to analyze the Affect metric.
 ```{r}
 library(readr)
 library(lme4)
+library(lme4cens)
+library(lmerTest)
+library(brms)
 
-CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+# CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+CircleTimeData <- read_csv("C:/Users/nhuan/Desktop/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
 
 # Fit a mixed-effects model
 df <- CircleTimeData
 model <- lmer(Affect_Positive ~ Condition * time + (1 | Subject), data = df)
 summary(model)
 
-
+model2 <- brm(Affect_Positive ~ Condition * time + (1 | Subject), data = df)
+summary(model2)
 
 summary_table <- summary(model)$coefficients
 t_values <- summary_table[, "t value"]
@@ -159,8 +164,12 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
+library(lme4cens)
+library(lmerTest)
+library(brms)
 
-CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+# CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+CircleTimeData <- read_csv("C:/Users/nhuan/Desktop/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
 
 # View(CircleTimeData)
 # head(CircleTimeData)
@@ -172,6 +181,10 @@ df <- CircleTimeData
 model <- lmer(Affect_Negative ~ Condition * time + (1 | Subject), data = df)
 summary(model)
 
+model2 <- brm(Affect_Negative ~ Condition * time + (1 | Subject), data = df)
+summary(model2)
+marginal_effects_plot <- conditional_effects(model2)
+plot(marginal_effects_plot)
 
 summary_table <- summary(model)$coefficients
 t_values <- summary_table[, "t value"]
@@ -210,8 +223,12 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
+library(lme4cens)
+library(lmerTest)
+library(brms)
 
-CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+# CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+CircleTimeData <- read_csv("C:/Users/nhuan/Desktop/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
 
 # View(CircleTimeData)
 # head(CircleTimeData)
@@ -223,6 +240,8 @@ df <- CircleTimeData
 model <- lmer(Affect_Neutral ~ Condition * time + (1 | Subject), data = df)
 summary(model)
 
+model2 <- brm(Affect_Neutral ~ Condition * time + (1 | Subject), data = df)
+summary(model2)
 
 
 summary_table <- summary(model)$coefficients
@@ -263,8 +282,12 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
+library(lme4cens)
+library(lmerTest)
+library(brms)
 
-CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+# CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+CircleTimeData <- read_csv("C:/Users/nhuan/Desktop/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
 
 # View(CircleTimeData)
 # head(CircleTimeData)
@@ -276,7 +299,8 @@ df <- CircleTimeData
 model <- lmer(Communication_with_Instructor ~ Condition * time + (1 | Subject), data = df)
 summary(model)
 
-
+model2 <- brm(Communication_with_Instructor ~ Condition * time + (1 | Subject), data = df)
+summary(model2)
 
 summary_table <- summary(model)$coefficients
 t_values <- summary_table[, "t value"]
@@ -313,8 +337,12 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
+library(lme4cens)
+library(lmerTest)
+library(brms)
 
-CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+# CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+CircleTimeData <- read_csv("C:/Users/nhuan/Desktop/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
 
 # View(CircleTimeData)
 # head(CircleTimeData)
@@ -326,6 +354,8 @@ df <- CircleTimeData
 model <- lmer(Communication_with_Instructor_Prompted ~ Condition * time + (1 | Subject), data = df)
 summary(model)
 
+model2 <- brm(Communication_with_Instructor_Prompted ~ Condition * time + (1 | Subject), data = df)
+summary(model2)
 
 summary_table <- summary(model)$coefficients
 t_values <- summary_table[, "t value"]
@@ -363,8 +393,12 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
+library(lme4cens)
+library(lmerTest)
+library(brms)
 
-CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+# CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+CircleTimeData <- read_csv("C:/Users/nhuan/Desktop/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
 
 # View(CircleTimeData)
 # head(CircleTimeData)
@@ -376,6 +410,8 @@ df <- CircleTimeData
 model <- lmer(Communication_with_Therapist ~ Condition * time + (1 | Subject), data = df)
 summary(model)
 
+model2 <- brm(Communication_with_Therapist ~ Condition * time + (1 | Subject), data = df)
+summary(model2)
 
 summary_table <- summary(model)$coefficients
 t_values <- summary_table[, "t value"]
@@ -413,8 +449,12 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
+library(lme4cens)
+library(lmerTest)
+library(brms)
 
-CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+# CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+CircleTimeData <- read_csv("C:/Users/nhuan/Desktop/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
 
 # View(CircleTimeData)
 # head(CircleTimeData)
@@ -426,7 +466,8 @@ df <- CircleTimeData
 model <- lmer(Communication_with_Indeterminent ~ Condition * time + (1 | Subject), data = df)
 summary(model)
 
-
+model2 <- brm(Communication_with_Indeterminent ~ Condition * time + (1 | Subject), data = df)
+summary(model2)
 
 summary_table <- summary(model)$coefficients
 t_values <- summary_table[, "t value"]
@@ -464,8 +505,12 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
+library(lme4cens)
+library(lmerTest)
+library(brms)
 
-CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+# CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+CircleTimeData <- read_csv("C:/Users/nhuan/Desktop/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
 
 # View(CircleTimeData)
 # head(CircleTimeData)
@@ -477,6 +522,8 @@ df <- CircleTimeData
 model <- lmer(Engagement_OnTarget ~ Condition * time + (1 | Subject), data = df)
 summary(model)
 
+model2 <- brm(Engagement_OnTarget ~ Condition * time + (1 | Subject), data = df)
+summary(model2)
 
 
 summary_table <- summary(model)$coefficients
@@ -515,8 +562,12 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
+library(lme4cens)
+library(lmerTest)
+library(brms)
 
-CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+# CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+CircleTimeData <- read_csv("C:/Users/nhuan/Desktop/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
 
 # View(CircleTimeData)
 # head(CircleTimeData)
@@ -528,7 +579,8 @@ df <- CircleTimeData
 model <- lmer(Engagement_Therapist ~ Condition * time + (1 | Subject), data = df)
 summary(model)
 
-
+model2 <- brm(Engagement_Therapist ~ Condition * time + (1 | Subject), data = df)
+summary(model2)
 
 summary_table <- summary(model)$coefficients
 t_values <- summary_table[, "t value"]
@@ -566,8 +618,12 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
+library(lme4cens)
+library(lmerTest)
+library(brms)
 
-CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+# CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+CircleTimeData <- read_csv("C:/Users/nhuan/Desktop/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
 
 # View(CircleTimeData)
 # head(CircleTimeData)
@@ -579,6 +635,8 @@ df <- CircleTimeData
 model <- lmer(Engagement_OffTarget ~ Condition * time + (1 | Subject), data = df)
 summary(model)
 
+model2 <- brm(Engagement_OffTarget ~ Condition * time + (1 | Subject), data = df)
+summary(model2)
 
 
 summary_table <- summary(model)$coefficients
@@ -619,8 +677,12 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
+library(lme4cens)
+library(lmerTest)
+library(brms)
 
-CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+# CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+CircleTimeData <- read_csv("C:/Users/nhuan/Desktop/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
 
 # View(CircleTimeData)
 # head(CircleTimeData)
@@ -632,6 +694,8 @@ df <- CircleTimeData
 model <- lmer(Performance_Positive ~ Condition * time + (1 | Subject), data = df)
 summary(model)
 
+model2 <- brm(Performance_Positive ~ Condition * time + (1 | Subject), data = df)
+summary(model2)
 
 
 summary_table <- summary(model)$coefficients
@@ -670,8 +734,12 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
+library(lme4cens)
+library(lmerTest)
+library(brms)
 
-CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+# CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
+CircleTimeData <- read_csv("C:/Users/nhuan/Desktop/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
 
 # View(CircleTimeData)
 # head(CircleTimeData)
@@ -682,6 +750,9 @@ df <- CircleTimeData
 # spec(df)
 model <- lmer(Performance_Negative ~ Condition * time + (1 | Subject), data = df)
 summary(model)
+
+model2 <- brm(Performance_Negative ~ Condition * time + (1 | Subject), data = df)
+summary(model2)
 
 plot(model)
 

@@ -3,13 +3,13 @@ title: "CircleTime Data Analyses"
 author: "Pourya Shahverdi"
 date: "`r Sys.Date()`"
 output:
+  html_document: 
+    toc: yes
+    toc_depth: 4
   pdf_document: 
     toc: yes
     toc_depth: 4
     number_sections: yes
-  html_document: 
-    toc: yes
-    toc_depth: 4
 ---
 # About the Study #
 
@@ -112,17 +112,17 @@ We use a Linear Mixed-Effect Model to analyze the Affect metric.
 ```{r}
 library(readr)
 library(lme4)
-library(lme4cens)
+# library(lme4cens)
 library(lmerTest)
 library(brms)
 
-# CircleTimeData <- read_csv("~/GitHub/CircleTime_HRI_DataAnalysis/CircleTimeData.csv")
-CircleTimeData <- read_csv("C:/Users/nhuan/Desktop/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
+CircleTimeData <- read_csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
+# CircleTimeData <- read_csv("C:/Users/nhuan/Desktop/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
 
 # Fit a mixed-effects model
 df <- CircleTimeData
-model <- lmer(Affect_Positive ~ Condition * time + (1 | Subject), data = df)
-summary(model)
+# model <- lmer(Affect_Positive ~ Condition * time + (1 | Subject), data = df)
+# summary(model)
 
 model2 <- brm(Affect_Positive ~ Condition * time + (1 | Subject), data = df)
 summary(model2)
@@ -164,7 +164,7 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
-library(lme4cens)
+# library(lme4cens)
 library(lmerTest)
 library(brms)
 
@@ -223,7 +223,7 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
-library(lme4cens)
+# library(lme4cens)
 library(lmerTest)
 library(brms)
 
@@ -282,7 +282,7 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
-library(lme4cens)
+# library(lme4cens)
 library(lmerTest)
 library(brms)
 
@@ -337,7 +337,7 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
-library(lme4cens)
+# library(lme4cens)
 library(lmerTest)
 library(brms)
 
@@ -393,7 +393,7 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
-library(lme4cens)
+# library(lme4cens)
 library(lmerTest)
 library(brms)
 
@@ -449,7 +449,7 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
-library(lme4cens)
+# library(lme4cens)
 library(lmerTest)
 library(brms)
 
@@ -505,7 +505,7 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
-library(lme4cens)
+# library(lme4cens)
 library(lmerTest)
 library(brms)
 
@@ -562,7 +562,7 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
-library(lme4cens)
+# library(lme4cens)
 library(lmerTest)
 library(brms)
 
@@ -618,7 +618,7 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
-library(lme4cens)
+# library(lme4cens)
 library(lmerTest)
 library(brms)
 
@@ -677,7 +677,7 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
-library(lme4cens)
+# library(lme4cens)
 library(lmerTest)
 library(brms)
 
@@ -734,7 +734,7 @@ shapiro.test(residuals(model))
 ```{r}
 library(readr)
 library(lme4)
-library(lme4cens)
+# library(lme4cens)
 library(lmerTest)
 library(brms)
 

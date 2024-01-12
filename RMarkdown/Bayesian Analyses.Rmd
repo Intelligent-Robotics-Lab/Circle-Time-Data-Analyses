@@ -29,9 +29,9 @@ In this study, we evaluate the efficacy of a social robot in delivering group in
 In this research, we address the following research questions:
 
 1. How learning behaviors (Affect, Communication, Engagement, Performance) differ between conditions (Human, Robot)?
-2. How is the interaction between learning behaviors (Affect, Communication, Engagement, Performance) and time (Session Number)?
-3. How is the interaction between different learning behaviors (Affect, Communication, Engagement, Performance)?
-4. Between the Affect, Communication, and Engagement learning behaviors, which one is more effective on the Performance learning behavior (increasing performance is considered as the main objective)?
+2. How is the correlation between learning behaviors (Affect, Communication, Engagement, Performance) and time (Session Number)?
+3. How is the correlation between different learning behaviors (Affect, Communication, Engagement, Performance)?
+4. Between the Affect, Communication, and Engagement learning behaviors, which one has more effective relationship with the Performance learning behavior (increasing performance is considered as the main objective)?
 
 
 
@@ -63,7 +63,7 @@ For this longitudinal within-subject study with 6 participants we defined the fo
 
 
 ### Data Collection ###
-The evaluation of the learning behavior is based on the following metrics:
+The evaluation of the learning behavior is based on the following continuous metrics:
 
 #### Affect #### 
 children's happiness level was defined as:
@@ -72,7 +72,7 @@ children's happiness level was defined as:
 * Negative 
 * Neutral
 
-A video was divided into 10 seconds intervals, and a human coder, focusing on one child in the group, labeled that interval as Positive if the child was happy, Negative if they was sad, and Neutral if they was neither happy or sad. Percentage of each measurement is used for analysis.
+A video was divided into 10 seconds intervals, and a human coder, focusing on one child in the group, labeled that interval as Positive if the child was showing positive affective behaviors (e.g., smiling, Clapping, laughing). An interval was labeled as Negative if the target child was showing negative affective behaviors (e.g., crying, whining, frowning). And, and an interval was labeled as Neutral if it was neither Positive or Negative. Percentage of each measurement is used for analysis as a continuous variable.
 
 #### Communication ####
 Communication of the children was coded into 4 categories. Communication with:
@@ -124,7 +124,7 @@ plot(bmodel)
 
 #### Reporting Affect Positive ####
 
-Our Bayesian analysis of Affect_Positive explores the emotional responses of children in conditions involving human (Condition 1) versus robot instructors (Condition 2) across four pivotal sessions, representing sessions 1, 4, 7, and 10 in the context of a comprehensive longitudinal study spanning six months. The estimated standard deviation of intercepts across subjects is 0.08 (95% CI: 0.04, 0.20), indicating moderate variability in baseline levels of Affect_Positive among individuals. Examining population-level effects, the intercept is estimated at 0.04 (95% CI: -0.14, 0.21), representing the expected value of Affect_Positive when both Condition and time are zero. Positive effect sizes were observed for both Condition (0.09, 95% CI: -0.01, 0.20) and time (0.01, 95% CI: -0.05, 0.07), suggesting an increase in Affect_Positive during sessions with robot instructors compared to human instructors and a gradual rise over time. Interestingly, the interaction effect, represented by Condition:time, showed a slight decrease in the effect of Condition over time (-0.01, 95% CI: -0.05, 0.02). The estimated standard deviation of the residuals (sigma) was 0.07 (95% CI: 0.06, 0.09), capturing variability not explained by the fixed effects. These findings offer valuable insights into the nuanced emotional experiences of children, revealing the intricate interplay between experimental conditions and the temporal dimension of our six-month longitudinal study. The reliable convergence of our Bayesian model and adequate effective sample sizes underscore the robustness of these intriguing results.
+Our Bayesian analysis of Affect_Positive explores the emotional responses of children in conditions involving human (Condition 1) versus robot instructors (Condition 2) across four pivotal sessions, representing sessions 1, 4, 7, and 10 in the context of a comprehensive longitudinal study spanning six months. The estimated standard deviation of intercepts across subjects is 0.08 (95% CI: 0.04, 0.20), indicating moderate variability in baseline levels of Affect_Positive among individuals. Examining population-level effects, the intercept is estimated at 0.04 (95% CI: -0.14, 0.21), representing the expected value of Affect_Positive when both Condition and time are zero. Positive effect sizes were observed for both Condition (0.09, 95% CI: -0.01, 0.20) and time (0.01, 95% CI: -0.05, 0.07), suggesting an increase in Affect_Positive during sessions with robot instructors compared to human instructors and a gradual rise over time. Interestingly, the interaction effect, represented by Condition:time, showed a slight decrease in the effect of Condition over time (-0.01, 95% CI: -0.05, 0.02). The estimated standard deviation of the residuals (sigma) was 0.07 (95% CI: 0.06, 0.09), capturing variability not explained by the fixed effects.
 
 
 ### Negative Affect ###
@@ -145,7 +145,29 @@ plot(bmodel)
 
 #### Reporting Negative Affect ####
 
-Our Bayesian analysis of Negative Affect delves into the emotional responses of children within conditions involving human (Condition 1) versus robot instructors (Condition 2) across four pivotal sessions, representing sessions 1, 4, 7, and 10 in the context of a comprehensive longitudinal study spanning six months. The estimated standard deviation of intercepts across subjects is 0.01 (95% CI: 0.00, 0.03), indicating minimal variability in baseline levels of Negative Affect among individuals. Exploring population-level effects, the intercept is estimated at 0.02 (95% CI: -0.02, 0.06), representing the expected value of Negative Affect when both Condition and time are zero. Negative effect sizes were observed for both Condition (-0.01, 95% CI: -0.03, 0.02) and time (-0.01, 95% CI: -0.02, 0.01), suggesting a decrease in Negative Affect during sessions with robot instructors compared to human instructors and a slight decline over time. The interaction effect, represented by Condition:time, showed a slight increase in the effect of Condition over time (0.01, 95% CI: -0.00, 0.01). The estimated standard deviation of the residuals (sigma) was 0.02 (95% CI: 0.01, 0.02), capturing variability not explained by the fixed effects. These findings provide nuanced insights into the emotional experiences of children, highlighting the dynamic interplay between experimental conditions and the temporal dimension of our six-month longitudinal study. The reliable convergence of our Bayesian model and adequate effective sample sizes underscore the robustness of these intriguing results.
+Our Bayesian analysis of Negative Affect delves into the emotional responses of children within conditions involving human (Condition 1) versus robot instructors (Condition 2) across four pivotal sessions, representing sessions 1, 4, 7, and 10 in the context of a comprehensive longitudinal study spanning six months. The estimated standard deviation of intercepts across subjects is 0.01 (95% CI: 0.00, 0.03), indicating minimal variability in baseline levels of Negative Affect among individuals. Exploring population-level effects, the intercept is estimated at 0.02 (95% CI: -0.02, 0.06), representing the expected value of Negative Affect when both Condition and time are zero. Negative effect sizes were observed for both Condition (-0.01, 95% CI: -0.03, 0.02) and time (-0.01, 95% CI: -0.02, 0.01), suggesting a decrease in Negative Affect during sessions with robot instructors compared to human instructors and a slight decline over time. The interaction effect, represented by Condition:time, showed a slight increase in the effect of Condition over time (0.01, 95% CI: -0.00, 0.01). The estimated standard deviation of the residuals (sigma) was 0.02 (95% CI: 0.01, 0.02), capturing variability not explained by the fixed effects.
+
+
+### Overall Affect (Positive - Negative) ###
+The percentage of positive intervals in a session was subtracted by the percentage of negative intervals to obtain their overall affect during the session.
+
+```{r}
+library(readr)
+library(brms)
+
+CircleTimeData <- read_csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
+
+bmodel <- brm(Affect_Overall ~ Condition * time + (1 | Subject), data = CircleTimeData)
+summary(bmodel)
+
+
+plot(bmodel)
+
+```
+### Reporting Overall Affect ###
+
+Examining the overall affect, our Bayesian analysis considered the impact of instructional conditions (human vs. robot instructors) and time across four sessions (sessions 1, 4, 7, and 10) in a longitudinal study conducted over six months. The standard deviation of intercepts across subjects is estimated at 0.09 (95% CI: 0.04, 0.22), indicating variability in baseline overall affect among individuals. At the population level, the intercept is estimated at 0.02 (95% CI: -0.17, 0.21), representing the expected overall affect when both Condition and time are zero. The effect size for Condition (0.10, 95% CI: -0.01, 0.21) suggests a moderate increase in overall affect with robot instructors compared to human instructors. The effect of time (0.01, 95% CI: -0.05, 0.08) indicates a slight linear trend in overall affect over sessions. The interaction effect Condition:time (-0.02, 95% CI: -0.06, 0.02) suggests a slight decrease in the rate of change in overall affect for robot instructors compared to human instructors. The estimated standard deviation of the residuals (sigma) is 0.08 (95% CI: 0.06, 0.10), representing unexplained variability not captured by the fixed effects.
+
 
 ### Neutral Affect ###
 
@@ -165,7 +187,7 @@ plot(bmodel)
 
 #### Reporting Neutral Affect ####
 
-Our Bayesian analysis of Neutral Affect explores the emotional responses of children across sessions involving human (Condition 1) versus robot instructors (Condition 2). These sessions are crucial, representing sessions 1, 4, 7, and 10, reflecting a longitudinal study spanning six months. The estimated standard deviation of intercepts across subjects is 0.08 (95% CI: 0.03, 0.20), indicative of some variability in baseline levels of Neutral Affect among individuals. Delving into population-level effects, the intercept is estimated at 0.95 (95% CI: 0.78, 1.13), representing the expected value of Neutral Affect when both Condition and time are zero. Noteworthy negative effect sizes were observed for Condition (-0.09, 95% CI: -0.19, 0.01), suggesting a decrease in Neutral Affect during sessions with robot instructors compared to human instructors. However, the effect size is not statistically significant, as the 95% CI encompasses zero. Additionally, time exhibited a slight negative effect (-0.01, 95% CI: -0.07, 0.05), suggesting a subtle decline in Neutral Affect over the sessions. The interaction effect, represented by Condition:time, showed a marginal increase in the effect of Condition over time (0.01, 95% CI: -0.02, 0.05). The estimated standard deviation of the residuals (sigma) was 0.07 (95% CI: 0.06, 0.09), capturing variability not explained by the fixed effects. These findings illuminate the nuanced emotional dynamics within our study, providing valuable insights into the interplay between experimental conditions and the temporal progression of a six-month longitudinal investigation. The convergence of our Bayesian model and adequate effective sample sizes bolster the reliability of these intriguing results.
+Our Bayesian analysis of Neutral Affect explores the emotional responses of children across sessions involving human (Condition 1) versus robot instructors (Condition 2). These sessions are crucial, representing sessions 1, 4, 7, and 10, reflecting a longitudinal study spanning six months. The estimated standard deviation of intercepts across subjects is 0.08 (95% CI: 0.03, 0.20), indicative of some variability in baseline levels of Neutral Affect among individuals. Delving into population-level effects, the intercept is estimated at 0.95 (95% CI: 0.78, 1.13), representing the expected value of Neutral Affect when both Condition and time are zero. Noteworthy negative effect sizes were observed for Condition (-0.09, 95% CI: -0.19, 0.01), suggesting a decrease in Neutral Affect during sessions with robot instructors compared to human instructors. However, the effect size is not statistically significant, as the 95% CI encompasses zero. Additionally, time exhibited a slight negative effect (-0.01, 95% CI: -0.07, 0.05), suggesting a subtle decline in Neutral Affect over the sessions. The interaction effect, represented by Condition:time, showed a marginal increase in the effect of Condition over time (0.01, 95% CI: -0.02, 0.05). The estimated standard deviation of the residuals (sigma) was 0.07 (95% CI: 0.06, 0.09), capturing variability not explained by the fixed effects.
 
 
 
@@ -189,7 +211,7 @@ plot(bmodel)
 ```
 #### Reporting Communication with Instructors ####
 
-Our Bayesian analysis of the 'Communication with Instructor' metric explores the dynamics of children's communication across sessions involving human (Condition 1) versus robot instructors (Condition 2). These sessions correspond to pivotal points in our longitudinal study, occurring at sessions 1, 4, 7, and 10, capturing the progression over a span of six months. The estimated standard deviation of intercepts across subjects is 0.04 (95% CI: 0.01, 0.09), indicating some variability in baseline communication levels among individuals. Examining population-level effects, the intercept is estimated at 0.06 (95% CI: -0.06, 0.18), representing the expected value of communication when both Condition and time are zero. A positive effect size for Condition (0.04, 95% CI: -0.03, 0.12) suggests a potential increase in communication during sessions with robot instructors compared to human instructors, but the effect size is not statistically significant, as the 95% CI encompasses zero. Time exhibits a positive effect (0.03, 95% CI: -0.02, 0.07), indicating a slight overall increase in communication over the sessions. The interaction effect, represented by Condition:time, shows a marginal decrease in the effect of Condition over time (-0.02, 95% CI: -0.05, 0.01). The estimated standard deviation of the residuals (sigma) is 0.05 (95% CI: 0.04, 0.07), capturing variability not accounted for by the fixed effects. Although there were three divergent transitions after warmup, the model converged, and our Bayesian analysis offers valuable insights into the nuanced patterns of communication dynamics between children and human versus robot instructors throughout the longitudinal study. The adequacy of effective sample sizes enhances the credibility of these findings.
+Our Bayesian analysis of the 'Communication with Instructor' metric explores the dynamics of children's communication across sessions involving human (Condition 1) versus robot instructors (Condition 2). These sessions correspond to pivotal points in our longitudinal study, occurring at sessions 1, 4, 7, and 10, capturing the progression over a span of six months. The estimated standard deviation of intercepts across subjects is 0.04 (95% CI: 0.01, 0.09), indicating some variability in baseline communication levels among individuals. Examining population-level effects, the intercept is estimated at 0.06 (95% CI: -0.06, 0.18), representing the expected value of communication when both Condition and time are zero. A positive effect size for Condition (0.04, 95% CI: -0.03, 0.12) suggests a potential increase in communication during sessions with robot instructors compared to human instructors, but the effect size is not statistically significant, as the 95% CI encompasses zero. Time exhibits a positive effect (0.03, 95% CI: -0.02, 0.07), indicating a slight overall increase in communication over the sessions. The interaction effect, represented by Condition:time, shows a marginal decrease in the effect of Condition over time (-0.02, 95% CI: -0.05, 0.01). The estimated standard deviation of the residuals (sigma) is 0.05 (95% CI: 0.04, 0.07), capturing variability not accounted for by the fixed effects.
 
 
 ### Prompted Communication with Instructor ###
@@ -210,7 +232,7 @@ plot(bmodel)
 
 #### Reporting Prompted Communication with Instructor ####
 
-In our Bayesian analysis of 'Prompted Communication with Instructor', the effect sizes for Condition (0.00, 95% CI: -0.01, 0.02), time (0.00, 95% CI: -0.01, 0.01), and the interaction effect Condition:time (-0.00, 95% CI: -0.01, 0.00) are all negligible, with 95% CIs spanning zero. The estimated standard deviation of the residuals (sigma) is 0.01 (95% CI: 0.01, 0.02), capturing variability not accounted for by the fixed effects. Convergence was achieved despite three divergent transitions after warmup, enhancing the robustness of our Bayesian analysis. This investigation provides insights into the subtleties of prompted communication dynamics between children and human versus robot instructors over the course of the longitudinal study.
+In our Bayesian analysis of 'Prompted Communication with Instructor', the effect sizes for Condition (0.00, 95% CI: -0.01, 0.02), time (0.00, 95% CI: -0.01, 0.01), and the interaction effect Condition:time (-0.00, 95% CI: -0.01, 0.00) are all negligible, with 95% CIs spanning zero. The estimated standard deviation of the residuals (sigma) is 0.01 (95% CI: 0.01, 0.02), capturing variability not accounted for by the fixed effects. Convergence was achieved despite three divergent transitions after warmup, enhancing the robustness of our Bayesian analysis.
 
 ### Communication with Behavioral Therapist ###
 

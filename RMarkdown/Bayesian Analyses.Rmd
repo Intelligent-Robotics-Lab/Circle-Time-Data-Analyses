@@ -1,0 +1,388 @@
+---
+title: "Bayesian Analyses for CircleTime"
+author: "Pourya Shahverdi"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: 
+    toc: yes
+    toc_depth: 4
+    number_sections: yes
+  html_document: 
+    toc: yes
+    toc_depth: 4
+---
+# About the Study #
+
+## Introduction to Circle-Time ##
+
+Circle-time is a group activity based on Applied Behavior Analysis (ABA) for children with Autism Spectrum Disorder (ASD) to prepare them for attending in traditional classroom activities alongside neurotically developed children. In circle-time, children sit together semicircular, and an instructor give them group instruction activities such as dance, yoga, labeling animals, finding objects, etc. The goal of circle-time is to improve children's learning behaviors, which are:
+
+* Affect
+* Communication
+* Engagement
+* Performance
+
+In this study, we evaluate the efficacy of a social robot in delivering group instruction activities to children with ASD. Throughout the six month of experiment, Six children participants received 10 sessions of group instructions from a human instructor and 10 sessions from a Pepper humanoid social robot as a within-subject study design. To compare children learning behaviors between the human and the robot instructor conditions their activities were video recorded and coded for the sessions 1, 4, 7, and 10.
+
+## Research Questions ##
+
+In this research, we address the following research questions:
+
+1. How learning behaviors (Affect, Communication, Engagement, Performance) differ between conditions (Human, Robot)?
+2. How is the correlation between learning behaviors (Affect, Communication, Engagement, Performance) and time (Session Number)?
+<!--3. How is the correlation between different learning behaviors (Affect, Communication, Engagement, Performance)?
+4. Between the Affect, Communication, and Engagement learning behaviors, which one has more effective relationship with the Performance learning behavior (increasing performance is considered as the main objective)? -->
+
+
+
+
+## Study Design ##
+
+For this longitudinal within-subject study with 6 participants we defined the following variables:
+
+#### Independent Variables ####
+
+* Instructor Conditions:
+
+  * Human ~ 1
+  * Robot ~ 2
+
+* Time
+  * Session 1  ~ 1
+  * Session 4  ~ 2
+  * Session 7  ~ 3
+  * Session 10 ~ 4
+  
+
+#### Dependent Variables ####
+
+* Affect
+* Communication
+* Engagement
+* Performance
+
+
+### Data Collection ###
+The evaluation of the learning behavior is based on the following continuous metrics:
+
+#### Affect #### 
+children's happiness level was defined as:
+
+* Positive 
+* Negative 
+* Neutral
+
+A video was divided into 10 seconds intervals, and a human coder, focusing on one child in the group, labeled that interval as Positive if the child was showing positive affective behaviors (e.g., smiling, Clapping, laughing). An interval was labeled as Negative if the target child was showing negative affective behaviors (e.g., crying, whining, frowning). And, and an interval was labeled as Neutral if it was neither Positive or Negative. Percentage of each measurement is used for analysis as a continuous variable.
+
+#### Communication ####
+Communication of the children was coded into 4 categories. Communication with:
+
+* Instructor
+* Instructor-Prompted
+* Behavior Therapist (BT) or peers
+* Indeterminate
+
+#### Engagement ####
+Engagement was coded into 3 categories. Engagement with:
+
+* Instructor or screen (On Target)
+* BT or peers
+* Off Target
+
+#### Performance ####
+Children's performance was coded into two categories:
+
+* Positive
+* Negative
+
+
+#### Inter-observer Agreement (IoA) ####
+At the beginning of the coding procedure, coders' understanding of the metrics had to be on the same page. We used Cohen's Kappa score to evaluate the IoA on the coding procedure. An individual coder was allowed to code independently only if their Cohen's Kappa IioA score was higher than 80%. All session ones and tens were double coded as well as the 30% of the session fours and sevens. For the sessions with lower than 80% agreement, coders went through coding together and came up with 100% agreement. We considered this conservative approach since we were looking into the highest reliability of data on our 6 participants.
+
+
+# Data Analysis #
+
+In order to investigate the research questions, we analyze the data from children's learning behaviors as follows:
+
+## Affect ##
+We use Bayesian Model to analyze the Affect metric.For all analyses condition 1 indicates the human instructor while condition 2 indicates the robot instructor.
+
+### Positive Affect ###
+
+```{r}
+library(readr)
+library(brms)
+
+CircleTimeData <- read_csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
+
+bmodel <- brm(Affect_Positive ~ Condition * time + (1 | Subject), data = CircleTimeData)
+summary(bmodel)
+
+plot(bmodel)
+
+```
+
+#### Reporting Affect Positive ####
+
+Our Bayesian analysis of Affect_Positive explores the emotional responses of children in conditions involving human (Condition 1) versus robot instructors (Condition 2) across four pivotal sessions, representing sessions 1, 4, 7, and 10 in the context of a comprehensive longitudinal study spanning six months. The estimated standard deviation of intercepts across subjects is 0.08 (95% CI: 0.04, 0.20), indicating moderate variability in baseline levels of Affect_Positive among individuals. Examining population-level effects, the intercept is estimated at 0.04 (95% CI: -0.14, 0.21), representing the expected value of Affect_Positive when both Condition and time are zero. Positive effect sizes were observed for both Condition (0.09, 95% CI: -0.01, 0.20) and time (0.01, 95% CI: -0.05, 0.07), suggesting an increase in Affect_Positive during sessions with robot instructors compared to human instructors and a gradual rise over time. Interestingly, the interaction effect, represented by Condition:time, showed a slight decrease in the effect of Condition over time (-0.01, 95% CI: -0.05, 0.02). The estimated standard deviation of the residuals (sigma) was 0.07 (95% CI: 0.06, 0.09), capturing variability not explained by the fixed effects.
+
+
+### Negative Affect ###
+
+```{r}
+library(readr)
+library(brms)
+
+CircleTimeData <- read_csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
+
+bmodel <- brm(Affect_Negative ~ Condition * time + (1 | Subject), data = CircleTimeData)
+summary(bmodel)
+
+
+plot(bmodel)
+
+```
+
+#### Reporting Negative Affect ####
+
+Our Bayesian analysis of Negative Affect delves into the emotional responses of children within conditions involving human (Condition 1) versus robot instructors (Condition 2) across four pivotal sessions, representing sessions 1, 4, 7, and 10 in the context of a comprehensive longitudinal study spanning six months. The estimated standard deviation of intercepts across subjects is 0.01 (95% CI: 0.00, 0.03), indicating minimal variability in baseline levels of Negative Affect among individuals. Exploring population-level effects, the intercept is estimated at 0.02 (95% CI: -0.02, 0.06), representing the expected value of Negative Affect when both Condition and time are zero. Negative effect sizes were observed for both Condition (-0.01, 95% CI: -0.03, 0.02) and time (-0.01, 95% CI: -0.02, 0.01), suggesting a decrease in Negative Affect during sessions with robot instructors compared to human instructors and a slight decline over time. The interaction effect, represented by Condition:time, showed a slight increase in the effect of Condition over time (0.01, 95% CI: -0.00, 0.01). The estimated standard deviation of the residuals (sigma) was 0.02 (95% CI: 0.01, 0.02), capturing variability not explained by the fixed effects.
+
+
+### Overall Affect (Positive - Negative) ###
+The percentage of positive intervals in a session was subtracted by the percentage of negative intervals to obtain their overall affect during the session.
+
+```{r}
+library(readr)
+library(brms)
+
+CircleTimeData <- read_csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
+
+bmodel <- brm(Affect_Overall ~ Condition * time + (1 | Subject), data = CircleTimeData)
+summary(bmodel)
+
+
+plot(bmodel)
+
+```
+### Reporting Overall Affect ###
+
+Examining the overall affect, our Bayesian analysis considered the impact of instructional conditions (human vs. robot instructors) and time across four sessions (sessions 1, 4, 7, and 10) in a longitudinal study conducted over six months. The standard deviation of intercepts across subjects is estimated at 0.09 (95% CI: 0.04, 0.22), indicating variability in baseline overall affect among individuals. At the population level, the intercept is estimated at 0.02 (95% CI: -0.17, 0.21), representing the expected overall affect when both Condition and time are zero. The effect size for Condition (0.10, 95% CI: -0.01, 0.21) suggests a moderate increase in overall affect with robot instructors compared to human instructors. The effect of time (0.01, 95% CI: -0.05, 0.08) indicates a slight linear trend in overall affect over sessions. The interaction effect Condition:time (-0.02, 95% CI: -0.06, 0.02) suggests a slight decrease in the rate of change in overall affect for robot instructors compared to human instructors. The estimated standard deviation of the residuals (sigma) is 0.08 (95% CI: 0.06, 0.10), representing unexplained variability not captured by the fixed effects.
+
+
+### Neutral Affect ###
+
+```{r}
+library(readr)
+library(brms)
+
+CircleTimeData <- read_csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
+
+bmodel <- brm(Affect_Neutral ~ Condition * time + (1 | Subject), data = CircleTimeData)
+summary(bmodel)
+
+
+plot(bmodel)
+
+```
+
+#### Reporting Neutral Affect ####
+
+Our Bayesian analysis of Neutral Affect explores the emotional responses of children across sessions involving human (Condition 1) versus robot instructors (Condition 2). These sessions are crucial, representing sessions 1, 4, 7, and 10, reflecting a longitudinal study spanning six months. The estimated standard deviation of intercepts across subjects is 0.08 (95% CI: 0.03, 0.20), indicative of some variability in baseline levels of Neutral Affect among individuals. Delving into population-level effects, the intercept is estimated at 0.95 (95% CI: 0.78, 1.13), representing the expected value of Neutral Affect when both Condition and time are zero. Noteworthy negative effect sizes were observed for Condition (-0.09, 95% CI: -0.19, 0.01), suggesting a decrease in Neutral Affect during sessions with robot instructors compared to human instructors. However, the effect size is not statistically significant, as the 95% CI encompasses zero. Additionally, time exhibited a slight negative effect (-0.01, 95% CI: -0.07, 0.05), suggesting a subtle decline in Neutral Affect over the sessions. The interaction effect, represented by Condition:time, showed a marginal increase in the effect of Condition over time (0.01, 95% CI: -0.02, 0.05). The estimated standard deviation of the residuals (sigma) was 0.07 (95% CI: 0.06, 0.09), capturing variability not explained by the fixed effects.
+
+
+
+## Communication ##
+We use Bayesian Model to analyze the Communication metric.For all analyses condition 1 indicates the human instructor while condition 2 indicates the robot instructor.
+
+### Communication with Instructor ###
+
+```{r}
+library(readr)
+library(brms)
+
+CircleTimeData <- read_csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
+
+bmodel <- brm(Communication_with_Instructor ~ Condition * time + (1 | Subject), data = CircleTimeData)
+summary(bmodel)
+
+
+plot(bmodel)
+
+```
+#### Reporting Communication with Instructors ####
+
+Our Bayesian analysis of the 'Communication with Instructor' metric explores the dynamics of children's communication across sessions involving human (Condition 1) versus robot instructors (Condition 2). These sessions correspond to pivotal points in our longitudinal study, occurring at sessions 1, 4, 7, and 10, capturing the progression over a span of six months. The estimated standard deviation of intercepts across subjects is 0.04 (95% CI: 0.01, 0.09), indicating some variability in baseline communication levels among individuals. Examining population-level effects, the intercept is estimated at 0.06 (95% CI: -0.06, 0.18), representing the expected value of communication when both Condition and time are zero. A positive effect size for Condition (0.04, 95% CI: -0.03, 0.12) suggests a potential increase in communication during sessions with robot instructors compared to human instructors, but the effect size is not statistically significant, as the 95% CI encompasses zero. Time exhibits a positive effect (0.03, 95% CI: -0.02, 0.07), indicating a slight overall increase in communication over the sessions. The interaction effect, represented by Condition:time, shows a marginal decrease in the effect of Condition over time (-0.02, 95% CI: -0.05, 0.01). The estimated standard deviation of the residuals (sigma) is 0.05 (95% CI: 0.04, 0.07), capturing variability not accounted for by the fixed effects.
+
+
+### Prompted Communication with Instructor ###
+
+```{r}
+library(readr)
+library(brms)
+
+CircleTimeData <- read_csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
+
+bmodel <- brm(Communication_with_Instructor_Prompted ~ Condition * time + (1 | Subject), data = CircleTimeData)
+summary(bmodel)
+
+
+plot(bmodel)
+
+```
+
+#### Reporting Prompted Communication with Instructor ####
+
+In our Bayesian analysis of 'Prompted Communication with Instructor', the effect sizes for Condition (0.00, 95% CI: -0.01, 0.02), time (0.00, 95% CI: -0.01, 0.01), and the interaction effect Condition:time (-0.00, 95% CI: -0.01, 0.00) are all negligible, with 95% CIs spanning zero. The estimated standard deviation of the residuals (sigma) is 0.01 (95% CI: 0.01, 0.02), capturing variability not accounted for by the fixed effects. Convergence was achieved despite three divergent transitions after warmup, enhancing the robustness of our Bayesian analysis.
+
+### Communication with Behavioral Therapist ###
+
+```{r}
+library(readr)
+library(brms)
+
+CircleTimeData <- read_csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
+
+bmodel <- brm(Communication_with_Therapist ~ Condition * time + (1 | Subject), data = CircleTimeData)
+summary(bmodel)
+
+
+plot(bmodel)
+
+```
+
+#### Reporting Communication with Behavioral Therapist ####
+
+In our Bayesian analysis of 'Communication with Behavioral Therapist',  the effect sizes for Condition (-0.02, 95% CI: -0.10, 0.05), time (-0.03, 95% CI: -0.08, 0.01), and the interaction effect Condition:time (0.01, 95% CI: -0.02, 0.04) are all relatively small, with 95% CIs spanning zero. The estimated standard deviation of the residuals (sigma) is 0.06 (95% CI: 0.05, 0.07), capturing variability not accounted for by the fixed effects. Our Bayesian analysis demonstrates convergence despite potential challenges, providing valuable insights into the intricate dynamics of children's communication with a behavioral therapist over the course of the longitudinal study.
+
+### Communication with Indeterminent ###
+
+
+```{r}
+library(readr)
+library(brms)
+
+CircleTimeData <- read_csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
+
+bmodel <- brm(Communication_with_Indeterminent ~ Condition * time + (1 | Subject), data = CircleTimeData)
+summary(bmodel)
+
+
+plot(bmodel)
+
+```
+
+#### Reporting Communication with Indeterminent ####
+
+The effect sizes for Condition (0.01, 95% CI: -0.05, 0.07), time (-0.02, 95% CI: -0.06, 0.01), and the interaction effect Condition:time (0.01, 95% CI: -0.02, 0.03) are all modest, with 95% CIs encompassing zero. The estimated standard deviation of the residuals (sigma) is 0.04 (95% CI: 0.04, 0.06), capturing variability not explained by the fixed effects. Despite potential challenges, our Bayesian analysis demonstrates convergence, offering valuable insights into the intricate dynamics of children's communication with an indeterminate entity over the course of the longitudinal study.
+
+
+## Engagement ##
+
+We use Bayesian Model to analyze the Engagement metric.For all analyses condition 1 indicates the human instructor while condition 2 indicates the robot instructor.
+
+### On-Target Engagement ###
+
+
+```{r}
+library(readr)
+library(brms)
+
+CircleTimeData <- read_csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
+
+bmodel <- brm(Engagement_OnTarget ~ Condition * time + (1 | Subject), data = CircleTimeData)
+summary(bmodel)
+
+
+plot(bmodel)
+
+```
+
+#### Reporting On-Target Engagement ####
+
+The effect size for Condition (0.06, 95% CI: -0.06, 0.18) is modest, indicating a slight difference in engagement with on-target between conditions. The effect of time (0.04, 95% CI: -0.02, 0.11) suggests a positive trend in engagement  with on-target over sessions. The interaction effect Condition:time (-0.02, 95% CI: -0.07, 0.02) is subtle, with a 95% CI encompassing zero. The estimated standard deviation of the residuals (sigma) is 0.08 (95% CI: 0.07, 0.10), capturing variability not explained by the fixed effects. Our Bayesian analysis demonstrates convergence, providing valuable insights into the nuanced patterns of children's engagement with on-target behaviors over the course of the longitudinal study.
+
+### Engagement with Behavioral Therapist ###
+
+```{r}
+library(readr)
+library(brms)
+
+CircleTimeData <- read_csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
+
+bmodel <- brm(Engagement_Therapist ~ Condition * time + (1 | Subject), data = CircleTimeData)
+summary(bmodel)
+
+
+plot(bmodel)
+
+```
+
+#### Reporting the Engagement with Behavioral Therapist ####
+
+The effect size for Condition (0.01, 95% CI: -0.03, 0.05) suggests a small difference in engagement between conditions. The effect of time (0.00, 95% CI: -0.02, 0.03) indicates a subtle positive trend in engagement over sessions. The interaction effect Condition:time (-0.00, 95% CI: -0.02, 0.01) is negligible, with a 95% CI encompassing zero. The estimated standard deviation of the residuals (sigma) is 0.03 (95% CI: 0.02, 0.04), capturing variability not explained by the fixed effects. Our Bayesian analysis demonstrates convergence, providing valuable insights into the nuanced patterns of children's engagement with the behavioral therapist throughout the longitudinal study.
+
+
+### Engagement with Off-Target ###
+
+```{r}
+library(readr)
+library(brms)
+
+CircleTimeData <- read_csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
+
+bmodel <- brm(Engagement_OffTarget ~ Condition * time + (1 | Subject), data = CircleTimeData)
+summary(bmodel)
+
+
+plot(bmodel)
+
+```
+
+#### Reporting the Engagement with Off-Target ####
+
+The effect size for Condition (-0.06, 95% CI: -0.16, 0.04) indicates a moderate decrease in off-target engagement with robot instructors compared to human instructors. The effect of time (-0.05, 95% CI: -0.10, 0.01) suggests a decreasing trend in off-target engagement over sessions. The interaction effect Condition:time (0.02, 95% CI: -0.01, 0.06) indicates a slight increase in the rate of decrease for robot instructors compared to human instructors. The estimated standard deviation of the residuals (sigma) is 0.07 (95% CI: 0.06, 0.09), capturing variability not explained by the fixed effects. Our Bayesian analysis demonstrates convergence, providing valuable insights into the nuanced patterns of children's engagement with off-target behaviors throughout the longitudinal study.
+
+
+## Performance ##
+
+We use Bayesian Model to analyze the Performance metric.For all analyses condition 1 indicates the human instructor while condition 2 indicates the robot instructor.
+
+### Positive Performance ###
+
+```{r}
+library(readr)
+library(brms)
+
+CircleTimeData <- read_csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
+
+bmodel <- brm(Performance_Positive ~ Condition * time + (1 | Subject), data = CircleTimeData)
+summary(bmodel)
+
+
+plot(bmodel)
+
+```
+
+#### Reporting the Positive Performance ####
+
+The effect size for Condition (-0.08, 95% CI: -0.22, 0.06) suggests a moderate decrease in positive performance with robot instructors compared to human instructors. The effect of time (0.00, 95% CI: -0.08, 0.09) indicates no significant linear trend in positive performance over sessions. The interaction effect Condition:time (0.01, 95% CI: -0.05, 0.06) suggests a slight increase in the rate of positive performance for robot instructors compared to human instructors. The estimated standard deviation of the residuals (sigma) is 0.10 (95% CI: 0.08, 0.13), capturing variability not explained by the fixed effects. Our Bayesian analysis demonstrates convergence, providing nuanced insights into the dynamics of positive performance across sessions and instructional conditions.
+
+### Negative Performance ###
+
+```{r}
+library(readr)
+library(brms)
+
+CircleTimeData <- read_csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData.csv")
+
+bmodel <- brm(Performance_Negative ~ Condition * time + (1 | Subject), data = CircleTimeData)
+summary(bmodel)
+
+
+plot(bmodel)
+
+```
+
+#### Reporting the Negative Performance ####
+
+The effect size for Condition (0.09, 95% CI: -0.05, 0.22) suggests a modest increase in negative performance with robot instructors compared to human instructors. The effect of time (0.00, 95% CI: -0.08, 0.08) indicates no significant linear trend in negative performance over sessions. The interaction effect Condition:time (-0.01, 95% CI: -0.06, 0.04) suggests a slight decrease in the rate of negative performance for robot instructors compared to human instructors. The estimated standard deviation of the residuals (sigma) is 0.10 (95% CI: 0.08, 0.12), representing unexplained variability not captured by the fixed effects. Our Bayesian analysis, with confirmed convergence, provides nuanced insights into the dynamics of negative performance across sessions and instructional conditions.

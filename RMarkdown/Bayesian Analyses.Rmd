@@ -30,8 +30,8 @@ In this research, we address the following research questions:
 
 1. How learning behaviors (Affect, Communication, Engagement, Performance) differ between conditions (Human, Robot)?
 2. How is the correlation between learning behaviors (Affect, Communication, Engagement, Performance) and time (Session Number)?
-3. How is the correlation between different learning behaviors (Affect, Communication, Engagement, Performance)?
-4. Between the Affect, Communication, and Engagement learning behaviors, which one has more effective relationship with the Performance learning behavior (increasing performance is considered as the main objective)?
+<!--3. How is the correlation between different learning behaviors (Affect, Communication, Engagement, Performance)?
+4. Between the Affect, Communication, and Engagement learning behaviors, which one has more effective relationship with the Performance learning behavior (increasing performance is considered as the main objective)? -->
 
 
 

@@ -1,0 +1,281 @@
+---
+title: "GLMM Analysis for Circle Time"
+author: "Pourya Shahverdi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+<!--output:
+  pdf_document:
+    toc: yes
+    toc_depth: 4
+    number_sections: yes
+    latex_engine: xelatex
+  html_document:
+    toc: yes
+    toc_depth: 4 -->
+    
+## Performance ##
+
+### Positive Performance ###
+```{r}
+library(glmmTMB)
+library(performance)
+library(DHARMa)
+
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+
+epsilon <- 0.0001
+df$Performance_Positive <- (df$Performance_Positive * (nrow(df) - 1) + epsilon) / nrow(df)
+
+
+model <- glmmTMB(
+  Performance_Positive ~ Condition + time + VBMAPP + (1 | Subject),
+  data = df,
+  family = beta_family()
+)
+
+summary(model)
+
+
+```
+The model revealed a significant main effect of instructor condition on children's performance (β = -0.374, *p* = .020). Performance was significantly lower in robot-led sessions compared to human-led sessions. Developmental ability, as measured by the VB-MAPP score, was a strong positive predictor (β = 8.672, *p* < .001), indicating that children with higher scores consistently outperformed their peers. Time did not significantly impact performance (β = 0.038, *p* = .605), suggesting stability across sessions.
+
+
+
+
+
+## Affect ##
+
+### Positive Affect ###
+```{r}
+library(glmmTMB)
+library(performance)
+library(DHARMa)
+
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+
+epsilon <- 0.0001
+df$Affect_Positive <- (df$Affect_Positive * (nrow(df) - 1) + epsilon) / nrow(df)
+
+
+model <- glmmTMB(
+  Affect_Positive ~ Condition + time + VBMAPP + (1 | Subject),
+  data = df,
+  family = beta_family()
+)
+
+summary(model)
+
+
+```
+Positive affect was significantly higher during robot-led sessions (β = 0.435, *p* = .0039), suggesting that robots may enhance emotional engagement. Neither session time (β = -0.078, *p* = .238) nor VB-MAPP score (β = -2.663, *p* = .138) significantly predicted positive affect, indicating that this emotional response was broadly distributed across ability levels and consistent across sessions.
+
+
+
+### Negative Affect ###
+```{r}
+library(glmmTMB)
+library(performance)
+library(DHARMa)
+
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+
+epsilon <- 0.0001
+df$Affect_Negative <- (df$Affect_Negative * (nrow(df) - 1) + epsilon) / nrow(df)
+
+
+model <- glmmTMB(
+  Affect_Negative ~ Condition + time + VBMAPP + (1 | Subject),
+  data = df,
+  family = beta_family()
+)
+
+summary(model)
+
+```
+Negative affect was generally low and did not vary significantly by instructor type (β = 0.200, *p* = .489), time (β = -0.027, *p* = .832), or VB-MAPP score (β = 1.010, *p* = .546). The intercept was significant (β = -6.553, *p* = .0176), confirming low baseline levels of negative affect.
+
+
+
+## Engagement ##
+
+### On Target ### 
+
+```{r}
+library(glmmTMB)
+library(performance)
+library(DHARMa)
+
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+
+epsilon <- 0.0001
+df$Engagement_OnTarget <- (df$Engagement_OnTarget * (nrow(df) - 1) + epsilon) / nrow(df)
+
+
+model <- glmmTMB(
+  Engagement_OnTarget ~ Condition + time + VBMAPP + (1 | Subject),
+  data = df,
+  family = beta_family()
+)
+
+summary(model)
+
+```
+None of the predictors significantly influenced on-target engagement. Condition (β = -0.038, *p* = .753), time (β = 0.090, *p* = .104), and VB-MAPP (β = 0.191, *p* = .792) had no meaningful effect. A marginal trend toward increased engagement over time suggests potential learning effects that could be explored further.
+
+
+### Therapist ### 
+
+```{r}
+library(glmmTMB)
+library(performance)
+library(DHARMa)
+
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+
+epsilon <- 0.0001
+df$Engagement_Therapist <- (df$Engagement_Therapist * (nrow(df) - 1) + epsilon) / nrow(df)
+
+
+model <- glmmTMB(
+  Engagement_Therapist ~ Condition + time + VBMAPP + (1 | Subject),
+  data = df,
+  family = beta_family()
+)
+
+summary(model)
+
+```
+
+Engagement with the therapist was marginally negatively associated with VB-MAPP score (β = -1.438, *p* = .078), suggesting that lower-ability children may rely more heavily on therapist support. Neither condition (β = 0.009, *p* = .949) nor time (β = -0.016, *p* = .795) showed a significant effect.
+
+
+### Off Target ### 
+
+```{r}
+library(glmmTMB)
+library(performance)
+library(DHARMa)
+
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+
+epsilon <- 0.0001
+df$Engagement_OffTarget <- (df$Engagement_OffTarget * (nrow(df) - 1) + epsilon) / nrow(df)
+
+
+model <- glmmTMB(
+  Engagement_OffTarget ~ Condition + time + VBMAPP + (1 | Subject),
+  data = df,
+  family = beta_family()
+)
+
+summary(model)
+
+```
+Off-target engagement increased marginally over time (β = -0.120, *p* = .070), possibly reflecting fatigue or declining focus. Condition (β = 0.114, *p* = .430) and VB-MAPP (β = 0.247, *p* = .774) were not significant predictors.
+
+
+## Communication ##
+
+### Communication with Instructor ### 
+
+```{r}
+library(glmmTMB)
+library(performance)
+library(DHARMa)
+
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+
+epsilon <- 0.0001
+df$Communication_with_Instructor <- (df$Communication_with_Instructor * (nrow(df) - 1) + epsilon) / nrow(df)
+
+
+model <- glmmTMB(
+  Communication_with_Instructor ~ Condition + time + VBMAPP + (1 | Subject),
+  data = df,
+  family = beta_family()
+)
+
+summary(model)
+
+```
+Communication directed at the instructor was not significantly influenced by condition (β = -0.136, *p* = .298), time (β = -0.079, *p* = .183), or VB-MAPP score (β = 1.063, *p* = .445), indicating stable and consistent patterns of direct instructor communication across all factors.
+
+
+
+### Communication with Instructor - Prompted ### 
+
+```{r}
+library(glmmTMB)
+library(performance)
+library(DHARMa)
+
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+
+epsilon <- 0.0001
+df$Communication_with_Instructor_Prompted <- (df$Communication_with_Instructor_Prompted * (nrow(df) - 1) + epsilon) / nrow(df)
+
+
+model <- glmmTMB(
+  Communication_with_Instructor_Prompted ~ Condition + time + VBMAPP + (1 | Subject),
+  data = df,
+  family = beta_family()
+)
+
+summary(model)
+
+```
+Prompted communication with the instructor showed no significant effects of condition (β = 0.239, *p* = .446), time (β = -0.178, *p* = .150), or VB-MAPP score (β = -1.360, *p* = .482), though the negative time trend may reflect increased autonomy over sessions.
+
+
+
+### Communication with Therapist ### 
+
+```{r}
+library(glmmTMB)
+library(performance)
+library(DHARMa)
+
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+
+epsilon <- 0.0001
+df$Communication_with_Therapist <- (df$Communication_with_Therapist * (nrow(df) - 1) + epsilon) / nrow(df)
+
+
+model <- glmmTMB(
+  Communication_with_Therapist ~ Condition + time + VBMAPP + (1 | Subject),
+  data = df,
+  family = beta_family()
+)
+
+summary(model)
+
+```
+Communication with the therapist declined significantly over time (β = -0.450, *p* < .001) and was significantly lower among children with higher VB-MAPP scores (β = -3.919, *p* = .002), suggesting increased independence. No condition effect was found (β = 0.032, *p* = .887).
+
+
+### Communication with Indeterminent ### 
+
+```{r}
+library(glmmTMB)
+library(performance)
+library(DHARMa)
+
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+
+epsilon <- 0.0001
+df$Communication_with_Indeterminent <- (df$Communication_with_Indeterminent * (nrow(df) - 1) + epsilon) / nrow(df)
+
+
+model <- glmmTMB(
+  Communication_with_Indeterminent ~ Condition + time + VBMAPP + (1 | Subject),
+  data = df,
+  family = beta_family()
+)
+
+summary(model)
+
+```
+
+Indeterminate communication was significantly more frequent in robot-led sessions (β = 1.055, *p* < .001), which may indicate breakdowns in communication or uncertainty about the robot's role. Time showed a marginal decrease (β = -0.226, *p* = .064), while VB-MAPP score had no significant effect (β = -1.243, *p* = .510).
+

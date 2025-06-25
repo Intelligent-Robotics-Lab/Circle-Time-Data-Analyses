@@ -29,13 +29,14 @@ Circle-time is a group activity based on Applied Behavior Analysis (ABA) for chi
 
 In this study, we evaluate the efficacy of a social robot in delivering group instruction activities to children with ASD. Throughout the six month of experiment, Six children participants received 10 sessions of group instructions from a human instructor and 10 sessions from a Pepper humanoid social robot as a within-subject study design. To compare children learning behaviors between the human and the robot instructor conditions their activities were video recorded and coded for the sessions 1, 4, 7, and 10.
 
+<!--
 ## Research Questions ##
 
 In this research, we address the following research questions:
 
 1. How learning behaviors (Affect, Communication, Engagement, Performance) differ between conditions (Human, Robot)?
 2. How is the correlation between learning behaviors (Affect, Communication, Engagement, Performance) and time (Session Number)?
-<!--3. How is the correlation between different learning behaviors (Affect, Communication, Engagement, Performance)?
+3. How is the correlation between different learning behaviors (Affect, Communication, Engagement, Performance)?
 4. Between the Affect, Communication, and Engagement learning behaviors, which one has more effective relationship with the Performance learning behavior (increasing performance is considered as the main objective)? -->
 
 
@@ -431,4 +432,208 @@ cor_matrix$r     # Correlation coefficients
 cor_matrix$P     # p-values
 
 ```
+
+## Which learning behaviors are most predictive of Performance? ##
+
+```{r}
+library(glmmTMB)
+library(DHARMa)
+library(performance)
+
+# Load and prepare your data
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+
+# Apply transformation to ensure values are in (0,1) for beta regression
+epsilon <- 0.0001
+df$Performance_Positive <- (df$Performance_Positive * (nrow(df) - 1) + epsilon) / nrow(df)
+
+# Fit the model
+model_predictors <- glmmTMB(
+  Performance_Positive ~ Affect_Positive + Communication_with_Therapist + Engagement_OnTarget + 
+    Condition + time + VBMAPP + (1 | Subject),
+  data = df,
+  family = beta_family()
+)
+
+# View summary
+summary(model_predictors)
+
+```
+
+###Significant Predictors:###
+Communication with Therapist
+
+β = -3.255, p = .038
+
+Interpretation: Higher communication with the therapist predicts lower performance. This likely reflects that children who struggle more require more therapist interaction/support.
+
+VB-MAPP Score (Developmental Ability)
+
+β = 7.928, p = .002
+
+Interpretation: Children with higher developmental ability consistently perform better.
+
+Condition (Robot vs Human)
+
+β = -0.379, p = .022
+
+Interpretation: Performance is significantly lower in robot-led sessions compared to human-led ones.
+
+
+## Investigating the Novelty Effect ##
+
+```{r}
+library(glmmTMB)
+library(DHARMa)
+library(performance)
+library(ggplot2)
+
+# Load and prepare your data
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+
+df$Condition <- factor(df$Condition, labels = c("Human", "Robot"))
+
+
+ggplot(df, aes(x = time, y = Affect_Positive, color = Condition, group = Condition)) +
+  stat_summary(fun = mean, geom = "line") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+  labs(title = "Positive Affect over Time by Instructor Type")
+
+# Center time if needed
+df$time_c <- scale(df$time, center = TRUE, scale = FALSE)
+
+model_novelty <- glmmTMB(
+  Affect_Positive ~ Condition * time_c + VBMAPP + (1 | Subject),
+  data = df,
+  family = beta_family()
+)
+
+summary(model_novelty)
+
+
+```
+
+For all Learning Behaviors:
+```{r}
+# Load required libraries
+library(glmmTMB)
+library(DHARMa)
+library(performance)
+library(ggplot2)
+
+# Load your data
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+
+# Center the time variable
+df$time_c <- scale(df$time, center = TRUE, scale = FALSE)
+
+# Apply transformation for all dependent variables (beta regression needs values in (0,1))
+epsilon <- 0.0001
+vars_to_transform <- c(
+  "Affect_Positive", "Affect_Negative",
+  "Communication_with_Instructor", "Communication_with_Instructor_Prompted",
+  "Communication_with_Therapist", "Communication_with_Indeterminent",
+  "Engagement_OnTarget", "Engagement_Therapist", "Engagement_OffTarget",
+  "Performance_Positive"
+)
+for (v in vars_to_transform) {
+  df[[v]] <- (df[[v]] * (nrow(df) - 1) + epsilon) / nrow(df)
+}
+
+# Function to run model and print summary
+run_novelty_model <- function(dep_var) {
+  formula <- as.formula(paste0(dep_var, " ~ Condition * time_c + VBMAPP + (1 | Subject)"))
+  model <- glmmTMB(formula, data = df, family = beta_family())
+  cat("====================================\n")
+  cat("Dependent Variable:", dep_var, "\n")
+  print(summary(model))
+  return(model)
+}
+
+# Run models for all learning behaviors
+models <- lapply(vars_to_transform, run_novelty_model)
+names(models) <- vars_to_transform
+
+library(ggplot2)
+
+# Ensure Condition is a factor with labels
+df$Condition <- factor(df$Condition, levels = c(1, 2), labels = c("Human", "Robot"))
+
+# Define your list of learning behavior variables
+learning_behaviors <- c(
+  "Affect_Positive", "Affect_Negative",
+  "Communication_with_Instructor", "Communication_with_Instructor_Prompted",
+  "Communication_with_Therapist", "Communication_with_Indeterminent",
+  "Engagement_OnTarget", "Engagement_Therapist", "Engagement_OffTarget",
+  "Performance_Positive"
+)
+
+# Loop through variables and generate plots
+for (var in learning_behaviors) {
+  p <- ggplot(df, aes_string(x = "time", y = var, color = "Condition", group = "Condition")) +
+    stat_summary(fun = mean, geom = "line", size = 1) +
+    stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+    labs(
+      title = paste0(gsub("_", " ", var), " over Time by Instructor Type"),
+      x = "Session",
+      y = paste("Mean", gsub("_", " ", var))
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(size = 14, face = "bold"),
+      axis.title = element_text(size = 12),
+      legend.title = element_blank()
+    )
+  
+  print(p)  # Display plot in RStudio
+
+  # Optionally save each plot to a file
+  ggsave(filename = paste0("plot_", var, ".png"), plot = p, width = 7, height = 5, dpi = 300)
+}
+
+
+library(glmmTMB)
+library(ggplot2)
+library(dplyr)
+
+# Load and center time
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+df$time_c <- scale(df$time, center = TRUE, scale = FALSE)
+
+# Variables to analyze
+behaviors <- c(
+  "Affect_Positive", "Affect_Negative",
+  "Communication_with_Instructor", "Communication_with_Instructor_Prompted",
+  "Communication_with_Therapist", "Communication_with_Indeterminent",
+  "Engagement_OnTarget", "Engagement_Therapist", "Engagement_OffTarget",
+  "Performance_Positive"
+)
+
+# Apply transformation for beta regression (values in (0,1))
+epsilon <- 0.0001
+for (v in behaviors) {
+  df[[v]] <- (df[[v]] * (nrow(df) - 1) + epsilon) / nrow(df)
+}
+
+# Function to model time effect within each condition
+run_time_effect_by_condition <- function(dep_var) {
+  for (cond in unique(df$Condition)) {
+    df_sub <- df[df$Condition == cond, ]
+    model <- glmmTMB(
+      as.formula(paste0(dep_var, " ~ time_c + VBMAPP + (1 | Subject)")),
+      data = df_sub,
+      family = beta_family()
+    )
+    
+    cat("====================================\n")
+    cat("Behavior:", dep_var, "| Condition:", cond, "\n")
+    print(summary(model)$coefficients$cond["time_c", ])
+  }
+}
+
+# Run the loop
+lapply(behaviors, run_time_effect_by_condition)
+
+```
+
 

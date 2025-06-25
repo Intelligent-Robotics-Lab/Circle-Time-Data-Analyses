@@ -1,0 +1,272 @@
+---
+title: "GLMM Analysis for Circle Time"
+author: "Pourya Shahverdi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+<!----
+title: "GLMM Analysis for Circle Time"
+author: "Pourya Shahverdi"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 4
+    number_sections: yes
+    latex_engine: xelatex
+  html_document:
+    toc: yes
+    toc_depth: 4
+----->
+
+
+
+
+# About the Study #
+
+## Introduction to Circle-Time ##
+
+Circle-time is a group activity based on Applied Behavior Analysis (ABA) for children with Autism Spectrum Disorder (ASD) to prepare them for attending in traditional classroom activities alongside neurotically developed children. In circle-time, children sit together semicircular, and an instructor give them group instruction activities such as dance, yoga, labeling animals, finding objects, etc. The goal of circle-time is to improve children's learning behaviors, which are:
+
+* Affect
+* Communication
+* Engagement
+* Performance
+
+In this study, we evaluate the efficacy of a social robot in delivering group instruction activities to children with ASD. Throughout the six month of experiment, Six children participants received 10 sessions of group instructions from a human instructor and 10 sessions from a Pepper humanoid social robot as a within-subject study design. To compare children learning behaviors between the human and the robot instructor conditions their activities were video recorded and coded for the sessions 1, 4, 7, and 10.
+
+## Study Design ##
+
+For this longitudinal within-subject study with 6 participants we defined the following variables:
+
+#### Independent Variables ####
+
+* Instructor Conditions:
+
+  * Human ~ 1
+  * Robot ~ 2
+
+* Time
+  * Session 1  ~ 1
+  * Session 4  ~ 2
+  * Session 7  ~ 3
+  * Session 10 ~ 4
+  
+
+#### Dependent Variables ####
+
+* Affect
+* Communication
+* Engagement
+* Performance
+
+
+### Data Collection ###
+The evaluation of the learning behavior is based on the following continuous metrics:
+
+#### Affect #### 
+children's happiness level was defined as:
+
+* Positive 
+* Negative 
+* Neutral
+
+A video was divided into 10 seconds intervals, and a human coder, focusing on one child in the group, labeled that interval as Positive if the child was showing positive affective behaviors (e.g., smiling, Clapping, laughing). An interval was labeled as Negative if the target child was showing negative affective behaviors (e.g., crying, whining, frowning). And, and an interval was labeled as Neutral if it was neither Positive or Negative. Percentage of each measurement is used for analysis as a continuous variable.
+
+#### Communication ####
+Communication of the children was coded into 4 categories. Communication with:
+
+* Instructor
+* Instructor-Prompted
+* Behavior Therapist (BT) or peers
+* Indeterminate
+
+#### Engagement ####
+Engagement was coded into 3 categories. Engagement with:
+
+* Instructor or screen (On Target)
+* BT or peers
+* Off Target
+
+#### Performance ####
+Children's performance was coded into two categories:
+
+* Positive
+* Negative
+
+
+#### Inter-observer Agreement (IoA) ####
+At the beginning of the coding procedure, coders' understanding of the metrics had to be on the same page. We used Cohen's Kappa score to evaluate the IoA on the coding procedure. An individual coder was allowed to code independently only if their Cohen's Kappa IioA score was higher than 80%. All session ones and tens were double coded as well as the 30% of the session fours and sevens. For the sessions with lower than 80% agreement, coders went through coding together and came up with 100% agreement. We considered this conservative approach since we were looking into the highest reliability of data on our 6 participants.
+
+
+# Data Analysis #
+In order to investigate the research questions, we analyze the data from children's learning behaviors as follows:
+
+
+
+```{r}
+
+library(glmmTMB)
+library(performance)
+library(DHARMa)
+library(ggplot2)
+library(broom.mixed)  # for tidy output with p-values
+
+# Load and preprocess data
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+df$Condition <- factor(df$Condition, levels = c(1, 2), labels = c("Human", "Robot"))
+df$time_c <- scale(df$time, center = TRUE, scale = FALSE)
+
+vars <- c(
+  "Affect_Positive", "Affect_Negative",
+  "Communication_with_Instructor", "Communication_with_Instructor_Prompted",
+  "Communication_with_Therapist", "Communication_with_Indeterminent",
+  "Engagement_OnTarget", "Engagement_Therapist", "Engagement_OffTarget",
+  "Performance_Positive"
+)
+
+# Apply beta transformation
+epsilon <- 0.0001
+for (v in vars) {
+  df[[v]] <- (df[[v]] * (nrow(df) - 1) + epsilon) / nrow(df)
+}
+
+# Significance stars function
+sig_stars <- function(p) {
+  if (is.na(p)) return("")
+  if (p < 0.001) return("***")
+  else if (p < 0.01) return("**")
+  else if (p < 0.05) return("*")
+  else if (p < 0.1) return(".")
+  else return("")
+}
+
+# Loop through all behaviors
+for (var in vars) {
+  cat("\n==============================\n")
+  cat("Behavior:", var, "\n")
+
+  # Additive model
+  form_add <- as.formula(paste0(var, " ~ Condition + time_c + VBMAPP + (1 | Subject)"))
+  model1 <- glmmTMB(form_add, data = df, family = beta_family())
+
+  # Interaction model
+  form_int <- as.formula(paste0(var, " ~ Condition * time_c + VBMAPP + (1 | Subject)"))
+  model2 <- glmmTMB(form_int, data = df, family = beta_family())
+
+  # Tidy output with significance
+  table <- broom.mixed::tidy(model2, effects = "fixed")
+  table$stars <- sapply(table$p.value, sig_stars)
+
+  cat("\nInteraction Model Summary:\n")
+  print(table[, c("term", "estimate", "std.error", "statistic", "p.value", "stars")])
+
+  # Plot
+  p <- ggplot(df, aes(x = time, y = df[[var]], color = Condition, group = Condition)) +
+    stat_summary(fun = mean, geom = "line", size = 1.2) +
+    stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+    labs(title = paste0(var, " over Time by Condition"),
+         x = "Session Time (1–4)", y = var, color = "Instructor") +
+    theme_minimal(base_size = 14)
+  print(p)
+}
+
+
+
+```
+
+## How each learning behavior predicts performance under the robot condition only? ##
+
+```{r}
+library(glmmTMB)
+library(broom.mixed)
+
+# Filter for robot condition only
+df_robot <- subset(df, Condition == "Robot")
+
+# Define outcome and predictors
+predictors <- c(
+  "Affect_Positive", "Affect_Negative",
+  "Communication_with_Instructor", "Communication_with_Instructor_Prompted",
+  "Communication_with_Therapist", "Communication_with_Indeterminent",
+  "Engagement_OnTarget", "Engagement_Therapist", "Engagement_OffTarget"
+)
+
+formula_str <- paste(
+  "Performance_Positive ~",
+  paste(c(predictors, "VBMAPP", "time_c"), collapse = " + "),
+  "+ (1 | Subject)"
+)
+model_robot_perf <- glmmTMB(as.formula(formula_str), data = df_robot, family = beta_family())
+
+# Tidy output with significance stars
+sig_stars <- function(p) {
+  if (is.na(p)) return("")
+  if (p < 0.001) return("***")
+  else if (p < 0.01) return("**")
+  else if (p < 0.05) return("*")
+  else if (p < 0.1) return(".")
+  else return("")
+}
+result_table <- broom.mixed::tidy(model_robot_perf, effects = "fixed")
+result_table$stars <- sapply(result_table$p.value, sig_stars)
+
+# Show the table
+print(result_table[, c("term", "estimate", "std.error", "statistic", "p.value", "stars")])
+
+```
+
+## How each learning behavior changes over time under the robot condition only? ##
+
+```{r}
+library(glmmTMB)
+library(ggplot2)
+library(broom.mixed)
+
+# Filter for robot condition
+df_robot <- subset(df, Condition == "Robot")
+
+# Learning behavior variables
+behaviors <- c(
+  "Affect_Positive", "Affect_Negative",
+  "Communication_with_Instructor", "Communication_with_Instructor_Prompted",
+  "Communication_with_Therapist", "Communication_with_Indeterminent",
+  "Engagement_OnTarget", "Engagement_Therapist", "Engagement_OffTarget", "Performance_Positive"
+)
+
+# Store results
+longitudinal_results <- list()
+
+for (behavior in behaviors) {
+  formula_str <- paste0(behavior, " ~ time_c + VBMAPP + (1 | Subject)")
+  model <- glmmTMB(as.formula(formula_str), data = df_robot, family = beta_family())
+  tidy_model <- tidy(model, effects = "fixed")
+  tidy_model$Behavior <- behavior
+  longitudinal_results[[behavior]] <- tidy_model
+}
+
+# Combine all results
+library(dplyr)
+all_longitudinal <- bind_rows(longitudinal_results)
+
+# Filter for time_c effect only
+time_effects <- all_longitudinal %>%
+  filter(term == "time_c") %>%
+  mutate(
+    sig = case_when(
+      p.value < 0.001 ~ "***",
+      p.value < 0.01 ~ "**",
+      p.value < 0.05 ~ "*",
+      p.value < 0.1 ~ ".",
+      TRUE ~ ""
+    )
+  ) %>%
+  arrange(p.value)
+
+# Print summary of time effects
+print(time_effects[, c("Behavior", "estimate", "std.error", "statistic", "p.value", "sig")])
+
+```
+

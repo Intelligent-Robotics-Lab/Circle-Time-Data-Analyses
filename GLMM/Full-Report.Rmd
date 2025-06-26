@@ -1,0 +1,187 @@
+---
+title: "GLMM Analysis for Circle Time"
+author: "Pourya Shahverdi"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: yes
+    toc_depth: 4
+---
+
+# About the Study
+
+## Introduction to Circle-Time
+
+Circle-time is a group activity based on Applied Behavior Analysis (ABA) for children with Autism Spectrum Disorder (ASD) to prepare them for attending in traditional classroom activities alongside neurotypically developing children. In circle-time, children sit together semicircular, and an instructor gives them group instruction activities such as dance, yoga, labeling animals, finding objects, etc. The goal of circle-time is to improve children's learning behaviors, which are:
+
+- Affect  
+- Communication  
+- Engagement  
+- Performance  
+
+In this study, we evaluate the efficacy of a social robot in delivering group instruction activities to children with ASD. Throughout the six months of experiment, six children participants received 10 sessions of group instructions from a human instructor and 10 sessions from a Pepper humanoid social robot as a within-subject study design. To compare children's learning behaviors between the human and the robot instructor conditions, their activities were video recorded and coded for sessions 1, 4, 7, and 10.
+
+## Study Design
+
+For this longitudinal within-subject study with 6 participants we defined the following variables:
+
+### Independent Variables
+
+- Instructor Conditions:  
+  - Human ~ 1  
+  - Robot ~ 2  
+
+- Time:  
+  - Session 1  ~ 1  
+  - Session 4  ~ 2  
+  - Session 7  ~ 3  
+  - Session 10 ~ 4  
+
+### Dependent Variables
+
+- Affect  
+- Communication  
+- Engagement  
+- Performance  
+
+## Data Collection
+
+The evaluation of the learning behavior is based on the following continuous metrics:
+
+### Affect
+Children’s happiness level was defined as:
+
+- Positive  
+- Negative  
+- Neutral  
+
+A video was divided into 10-second intervals. A human coder, focusing on one child in the group, labeled that interval as Positive if the child was showing positive affective behaviors (e.g., smiling, clapping, laughing). An interval was labeled as Negative if the child was showing negative affective behaviors (e.g., crying, whining, frowning). Neutral was used when neither applied. The percentage of each type was used for analysis.
+
+### Communication
+Communication was coded into 4 categories:
+
+- With Instructor  
+- Instructor-Prompted  
+- With Behavior Therapist (BT) or peers  
+- Indeterminate  
+
+### Engagement
+Engagement was coded into 3 categories:
+
+- On Target (Instructor or screen)  
+- With BT or peers  
+- Off Target  
+
+### Performance
+Children’s performance was coded as:
+
+- Positive  
+- Negative  
+
+### Inter-observer Agreement (IoA)
+
+Coders were required to exceed 80% Cohen’s Kappa IoA to code independently. All session ones and tens were double-coded, along with 30% of session fours and sevens. Disagreements were resolved through joint review to ensure 100% final agreement.
+
+# Data Analysis
+```{r}
+library(glmmTMB)
+library(performance)
+library(DHARMa)
+library(ggplot2)
+library(broom.mixed)
+library(dplyr)
+
+# Load and preprocess data
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+df$Condition <- factor(df$Condition, levels = c(1, 2), labels = c("Human", "Robot"))
+df$time_c <- scale(df$time, center = TRUE, scale = FALSE)
+
+vars <- c(
+  "Affect_Positive", "Affect_Negative",
+  "Communication_with_Instructor", "Communication_with_Instructor_Prompted",
+  "Communication_with_Therapist", "Communication_with_Indeterminent",
+  "Engagement_OnTarget", "Engagement_Therapist", "Engagement_OffTarget",
+  "Performance_Positive"
+)
+
+# Apply beta transformation
+epsilon <- 0.0001
+for (v in vars) {
+  df[[v]] <- (df[[v]] * (nrow(df) - 1) + epsilon) / nrow(df)
+}
+
+# Significance stars function
+sig_stars <- function(p) {
+  if (is.na(p)) return("")
+  if (p < 0.001) return("***")
+  else if (p < 0.01) return("**")
+  else if (p < 0.05) return("*")
+  else if (p < 0.1) return(".")
+  else return("")
+}
+
+# Loop through all learning behavior variables
+for (var in vars) {
+  cat("\n==============================\n")
+  cat("Behavior:", var, "\n")
+
+  # --- Additive Model ---
+  form_add <- as.formula(paste0(var, " ~ Condition + time_c + VBMAPP + (1 | Subject)"))
+  model_add <- glmmTMB(form_add, data = df, family = beta_family())
+
+  table_add <- broom.mixed::tidy(model_add, effects = "fixed")
+  table_add$stars <- sapply(table_add$p.value, sig_stars)
+
+  cat("\nAdditive Model Summary:\n")
+  print(table_add[, c("term", "estimate", "std.error", "statistic", "p.value", "stars")])
+
+  # --- Interaction Model ---
+  form_int <- as.formula(paste0(var, " ~ Condition * time_c + Condition * VBMAPP + (1 | Subject)"))
+  model_int <- glmmTMB(form_int, data = df, family = beta_family())
+
+  table_int <- broom.mixed::tidy(model_int, effects = "fixed")
+  table_int$stars <- sapply(table_int$p.value, sig_stars)
+
+  cat("\nInteraction Model Summary:\n")
+  print(table_int[, c("term", "estimate", "std.error", "statistic", "p.value", "stars")])
+
+  # Plot: Behavior over time by instructor
+  p1 <- ggplot(df, aes(x = time, y = .data[[var]], color = Condition, group = Condition)) +
+    stat_summary(fun = mean, geom = "line", size = 1.2) +
+    stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+    labs(
+      title = paste0(var, " over Time by Condition"),
+      x = "Session Time (1–4)", y = var, color = "Instructor"
+    ) +
+    theme_minimal(base_size = 14)
+  print(p1)
+
+  # Plot: VB-MAPP x Condition (only meaningful with interaction model)
+  new_data <- expand.grid(
+    Condition = factor(c("Human", "Robot"), levels = c("Human", "Robot")),
+    time_c = 0,
+    VBMAPP = seq(min(df$VBMAPP), max(df$VBMAPP), length.out = 100),
+    Subject = NA
+  )
+  pred <- predict(model_int, newdata = new_data, type = "response", se.fit = TRUE)
+  new_data$predicted <- pred$fit
+  new_data$conf.low <- pred$fit - 1.96 * pred$se.fit
+  new_data$conf.high <- pred$fit + 1.96 * pred$se.fit
+  new_data$group <- new_data$Condition
+
+  p2 <- ggplot(new_data, aes(x = VBMAPP, y = predicted, color = group)) +
+    geom_line(size = 1.3) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = group), alpha = 0.2, color = NA) +
+    labs(
+      x = "VB-MAPP Score",
+      y = paste("Predicted", gsub("_", " ", var)),
+      color = "Instructor",
+      fill = "Instructor",
+      title = paste("Interaction of VB-MAPP and Instructor on", gsub("_", " ", var))
+    ) +
+    theme_minimal(base_size = 14)
+  print(p2)
+}
+
+
+```

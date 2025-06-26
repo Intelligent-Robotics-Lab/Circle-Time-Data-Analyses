@@ -2,11 +2,17 @@
 title: "GLMM Analysis for Circle Time"
 author: "Pourya Shahverdi"
 date: "`r Sys.Date()`"
-output: 
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 4
+    number_sections: yes
+    latex_engine: xelatex
   html_document:
     toc: yes
     toc_depth: 4
 ---
+
 
 # About the Study
 
@@ -83,6 +89,18 @@ Children’s performance was coded as:
 Coders were required to exceed 80% Cohen’s Kappa IoA to code independently. All session ones and tens were double-coded, along with 30% of session fours and sevens. Disagreements were resolved through joint review to ensure 100% final agreement.
 
 # Data Analysis
+
+## Additive and Interaction Models and Plots ##
+In this section, we first fit an additive model to evaluate the overall effects of instructor condition (Human vs. Robot), session time, and children’s VB-MAPP scores on each learning behavior. By including VB-MAPP as a covariate, we control for differences in individual skill levels, ensuring a fair comparison of the children's responses across instructional conditions over time.
+
+Next, we extend the analysis using an interaction model that tests whether the effect of instructor condition varies depending on the session time or the VB-MAPP score. This helps uncover whether certain children or timepoints show stronger effects from robot-led instruction.
+
+To visualize the results, we generate two types of plots for each learning behavior.
+The first plot overlays violin plots of bootstrapped behavioral estimates across session timepoints. These violins illustrate the distribution and spread of responses for each instructor condition. We also superimpose the mean value of each group with connecting lines, providing a clear view of trends across sessions.
+The second plot shows the predicted behavioral outcome as a function of VB-MAPP score for both Human and Robot conditions. Shaded confidence bands represent the uncertainty around these estimates, allowing us to visualize how instructor efficacy changes as a function of the child’s developmental profile.
+
+Together, these analyses and visualizations offer a comprehensive understanding of how social robot instruction compares to human-led instruction across time and learner profiles.
+
 ```{r}
 library(glmmTMB)
 library(performance)
@@ -90,6 +108,8 @@ library(DHARMa)
 library(ggplot2)
 library(broom.mixed)
 library(dplyr)
+library(boot)
+library(tidyr)
 
 # Load and preprocess data
 df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
@@ -120,7 +140,13 @@ sig_stars <- function(p) {
   else return("")
 }
 
-# Loop through all learning behavior variables
+## Additive and Interaction Models and Plots ##
+## This section evaluates the behavioral metrics of interest (e.g., Affect, Engagement) through two modeling approaches:
+## 1. An additive model controlling for VB-MAPP scores.
+## 2. An interaction model examining moderation effects of Condition with time and VB-MAPP.
+## 
+## We then visualize the bootstrapped confidence distributions using violin plots, mean trends, and the interaction effects with VB-MAPP.
+
 for (var in vars) {
   cat("\n==============================\n")
   cat("Behavior:", var, "\n")
@@ -145,18 +171,62 @@ for (var in vars) {
   cat("\nInteraction Model Summary:\n")
   print(table_int[, c("term", "estimate", "std.error", "statistic", "p.value", "stars")])
 
-  # Plot: Behavior over time by instructor
-  p1 <- ggplot(df, aes(x = time, y = .data[[var]], color = Condition, group = Condition)) +
-    stat_summary(fun = mean, geom = "line", size = 1.2) +
-    stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
-    labs(
-      title = paste0(var, " over Time by Condition"),
-      x = "Session Time (1–4)", y = var, color = "Instructor"
-    ) +
-    theme_minimal(base_size = 14)
-  print(p1)
+  # --- Bootstrap Violin Plots with Mean Line ---
+  mean_df <- df %>%
+    group_by(Condition, time) %>%
+    summarise(mean_value = mean(.data[[var]]), .groups = "drop")
 
-  # Plot: VB-MAPP x Condition (only meaningful with interaction model)
+  bootstrap_samples <- df %>%
+    group_by(Condition, time) %>%
+    group_modify(~ {
+      boot_result <- boot(.x[[var]], statistic = function(d, i) mean(d[i]), R = 1000)
+      tibble(bootstrap = boot_result$t[, 1])
+    }) %>%
+    ungroup()
+
+  p_violin_line <- ggplot() +
+    geom_violin(
+      data = bootstrap_samples,
+      aes(x = factor(time), y = bootstrap, fill = Condition),
+      position = position_identity(),
+      alpha = 0.4,
+      trim = FALSE,
+      width = 1
+    ) +
+    geom_line(
+      data = mean_df,
+      aes(x = as.numeric(factor(time)), y = mean_value, color = Condition, group = Condition),
+      linewidth = 1.2
+    ) +
+    geom_point(
+      data = mean_df,
+      aes(x = as.numeric(factor(time)), y = mean_value, fill = Condition),
+      color = "black",
+      shape = 21,
+      size = 3
+    ) +
+    scale_x_discrete(
+      name = "Session",
+      labels = c("1st", "4th", "7th", "10th")
+    ) +
+    labs(
+      title = paste(var, "– Confidence Distributions with Mean Trends"),
+      y = "Bootstrapped Mean",
+      fill = "Condition",
+      color = "Condition"
+    ) +
+      theme_minimal(base_size = 10) +
+  theme(
+    plot.title = element_text(size = 10),
+    axis.title = element_text(size = 9),
+    axis.text = element_text(size = 8),
+    legend.title = element_text(size = 9),
+    legend.text = element_text(size = 8)
+  )
+
+  print(p_violin_line)
+
+  # --- VB-MAPP Interaction Plot ---
   new_data <- expand.grid(
     Condition = factor(c("Human", "Robot"), levels = c("Human", "Robot")),
     time_c = 0,
@@ -179,9 +249,312 @@ for (var in vars) {
       fill = "Instructor",
       title = paste("Interaction of VB-MAPP and Instructor on", gsub("_", " ", var))
     ) +
-    theme_minimal(base_size = 14)
+    theme_minimal(base_size = 10) +
+  theme(
+    plot.title = element_text(size = 10),
+    axis.title = element_text(size = 9),
+    axis.text = element_text(size = 8),
+    legend.title = element_text(size = 9),
+    legend.text = element_text(size = 8)
+  )
+
   print(p2)
 }
 
 
 ```
+
+## Results: Additive Model Comparison Between Human and Robot Instructors
+
+To evaluate the effect of instructor type on children's learning behaviors, we fitted additive generalized linear mixed models (GLMMs) with `Condition` (Human vs. Robot) as a fixed effect, controlling for session time (`time_c`) and individual skill level (`VB-MAPP`). A random intercept for `Subject` accounted for repeated measures. All dependent variables were modeled with a beta distribution to account for their bounded, proportional nature. Below we report the estimated effect of the Robot condition (`ConditionRobot`) relative to the Human condition for each behavioral outcome.
+
+### Affect
+
+- **Positive Affect** was significantly higher during robot-led instruction compared to human-led instruction:  
+  *β = 0.435, SE = 0.151, z = 2.89, p = 0.0039*  
+  This suggests that children expressed more positive emotional behaviors (e.g., smiling, clapping) during robot sessions.
+
+- **Negative Affect** did not differ significantly between conditions:  
+  *β = 0.200, SE = 0.289, z = 0.69, p = 0.489*
+
+### Communication
+
+- **Communication with Instructor** showed no significant difference between conditions:  
+  *β = -0.136, SE = 0.131, z = -1.04, p = 0.298*
+
+- **Instructor-Prompted Communication** was also not significantly affected:  
+  *β = 0.239, SE = 0.313, z = 0.76, p = 0.446*
+
+- **Communication with Therapist or Peers** remained similar across conditions:  
+  *β = 0.032, SE = 0.226, z = 0.14, p = 0.887*
+
+- **Indeterminate Communication** (where the communication partner was unclear) was significantly higher under the robot condition:  
+  *β = 1.05, SE = 0.294, z = 3.58, p = 0.0003*  
+  This may reflect increased ambiguity in children's social orientation during robot-led sessions.
+
+### Engagement
+
+- **On-Target Engagement** (attention to instructor or screen) did not differ significantly:  
+  *β = -0.038, SE = 0.122, z = -0.32, p = 0.753*
+
+- **Engagement with Therapist or Peers** showed no condition effect:  
+  *β = 0.009, SE = 0.137, z = 0.06, p = 0.949*
+
+- **Off-Target Engagement** (distraction or disengagement) also did not differ:  
+  *β = 0.114, SE = 0.145, z = 0.79, p = 0.430*
+
+### Performance
+
+- **Positive Performance** was significantly lower in the robot condition:  
+  *β = -0.374, SE = 0.161, z = -2.32, p = 0.020*  
+  This indicates children demonstrated fewer correct task responses during robot-led sessions, after adjusting for time and VB-MAPP scores.
+
+---
+
+### Summary
+
+In summary, the robot instructor was associated with **greater positive affect** but **lower task performance**. Communication directed to unknown partners was significantly more frequent in robot-led sessions, suggesting possible issues with clarity or focus. Engagement and most communication behaviors did not significantly differ between conditions. These findings highlight the **potential emotional benefits** of social robot instruction, while also identifying **critical areas—especially performance—that warrant refinement** in robot-mediated pedagogy.
+
+
+## Interaction Effects: Moderator Influence of Time and VB-MAPP on Robot-Led Instruction
+
+To explore whether the effect of robot-led instruction varied across time or with the learner's developmental profile, we modeled interaction terms between `ConditionRobot` and two continuous covariates: `time_c` (centered session time) and `VBMAPP` (individual skill level). Below we interpret these moderation effects for each behavioral outcome.
+
+### Affect
+
+- **Positive Affect**
+  - The interaction between `ConditionRobot` and `VBMAPP` was significant:  
+    *β = 4.22, SE = 1.48, z = 2.86, p = 0.0043*  
+    This suggests that the advantage of robot instruction in eliciting positive affect increased with higher VB-MAPP scores.
+  - No significant moderation by time was observed:  
+    *β = -0.070, SE = 0.121, z = -0.57, p = 0.566*
+
+- **Negative Affect**
+  - Neither time nor VB-MAPP significantly moderated the robot condition's effect:  
+    *Time interaction: β = 0.175, p = 0.485*  
+    *VB-MAPP interaction: β = 0.110, p = 0.974*
+
+### Communication
+
+- **With Instructor**
+  - No significant moderation by time (*β = -0.170, p = 0.143*) or VB-MAPP (*β = 0.067, p = 0.966*)
+
+- **Instructor-Prompted**
+  - VB-MAPP significantly moderated the effect of robot instruction:  
+    *β = -10.9, SE = 3.66, z = -2.99, p = 0.0028*  
+    This negative interaction indicates that children with higher VB-MAPP scores showed fewer prompted communications under the robot condition.
+  - Time was not a significant moderator: *β = -0.337, p = 0.163*
+
+- **With Therapist/Peers**
+  - No significant moderation by time or VB-MAPP:  
+    *Time: β = 0.208, p = 0.266*  
+    *VB-MAPP: β = 3.11, p = 0.197*
+
+- **Indeterminate**
+  - Both moderators were significant:
+    - *VB-MAPP interaction: β = 7.80, SE = 3.26, z = 2.39, p = 0.0168*  
+      This suggests the ambiguity in children’s social orientation during robot instruction increased with VB-MAPP score.
+    - *Time interaction was not significant: β = 0.042, p = 0.857*
+
+### Engagement
+
+- **On Target**
+  - No significant moderation by VB-MAPP: *β = -0.534, p = 0.706*  
+  - Time showed a non-significant trend: *β = -0.162, p = 0.132*
+
+- **With Therapist/Peers**
+  - Neither moderator had a significant effect:  
+    *Time: β = -0.022, p = 0.858*  
+    *VB-MAPP: β = 0.137, p = 0.933*
+
+- **Off Target**
+  - Time significantly moderated the robot effect:  
+    *β = 0.284, SE = 0.127, z = 2.24, p = 0.0250*  
+    This implies that robot-led instruction was associated with increased off-target engagement as time progressed.
+  - No significant interaction with VB-MAPP: *β = 0.461, p = 0.779*
+
+### Performance
+
+- **Positive Performance**
+  - No significant moderation by either variable:  
+    *Time: β = 0.019, p = 0.895*  
+    *VB-MAPP: β = 0.606, p = 0.728*
+
+---
+
+### Summary of Interaction Effects
+
+| Learning Behavior              | VB-MAPP Moderation | Time Moderation | Interpretation                                                                 |
+|-------------------------------|--------------------|-----------------|--------------------------------------------------------------------------------|
+| **Affect_Positive**           | ✅ p = 0.0043       | ❌               | Robot effect stronger for children with higher VB-MAPP                         |
+| **Affect_Negative**           | ❌                 | ❌               | No differential effect                                                         |
+| **Comm._Instructor**          | ❌                 | ❌               | No moderation observed                                                         |
+| **Comm._Prompted**            | ✅ p = 0.0028       | ❌               | Fewer prompted responses from higher-skilled children under robot condition    |
+| **Comm._Therapist/Peers**     | ❌                 | ❌               | No differential effect                                                         |
+| **Comm._Indeterminate**       | ✅ p = 0.0168       | ❌               | More ambiguous social behaviors with robot, especially for higher VB-MAPP      |
+| **Engagement_OnTarget**       | ❌                 | ❌ (trend)       | No clear pattern                                                               |
+| **Engagement_Therapist/Peers**| ❌                 | ❌               | No differential effect                                                         |
+| **Engagement_OffTarget**      | ❌                 | ✅ p = 0.025     | Robot instruction led to more off-task behaviors over time                     |
+| **Performance_Positive**      | ❌                 | ❌               | No significant moderation                                                      |
+
+Overall, robot-led instruction was **more emotionally engaging for higher-performing children**, but it also led to **more ambiguous and off-task behaviors**, especially as sessions progressed. These nuanced findings underscore the importance of **personalizing robotic instruction** based on learner profile and session context.
+
+## Predictive Role of Learning Behaviors on Performance in Human vs. Robot-Led Circle Time
+
+### Overview
+
+This section explores how various learning behaviors predict children's **positive performance** during circle-time sessions, separately under **Human** and **Robot** instruction conditions. Using Generalized Linear Mixed Models (GLMMs) with beta regression, we analyzed each behavioral predictor while controlling for children's VB-MAPP developmental levels and session time.
+
+### Modeling Approach
+
+For each learning behavior, we modeled:
+
+```{r}
+Performance_Positive ~ Behavior + VBMAPP + time_c + (1 | Subject)
+```
+
+
+This was done independently for the **Robot** and **Human** groups using the `glmmTMB` package in R. The response variable was beta-transformed for appropriate modeling.
+### How does each learning behavior predict performance under the robot condition only? ##
+
+```{r}
+# Subset data to robot-only condition
+robot_df <- df %>% filter(Condition == "Robot")
+
+# Define predictors (excluding Performance variables)
+predictors <- c(
+  "Affect_Positive", "Affect_Negative",
+  "Communication_with_Instructor", "Communication_with_Instructor_Prompted",
+  "Communication_with_Therapist", "Communication_with_Indeterminent",
+  "Engagement_OnTarget", "Engagement_Therapist", "Engagement_OffTarget"
+)
+
+# Response variable
+response <- "Performance_Positive"
+
+# Loop through predictors to model their effect on performance
+for (pred in predictors) {
+  cat("\n==============================\n")
+  cat("Predictor:", pred, "=>", response, "\n")
+
+  # Define formula
+  form <- as.formula(paste(response, "~", pred, "+ VBMAPP + time_c + (1 | Subject)"))
+
+  # Fit model
+  model <- glmmTMB(form, data = robot_df, family = beta_family())
+
+  # Tidy output
+  results <- broom.mixed::tidy(model, effects = "fixed")
+  results$stars <- sapply(results$p.value, sig_stars)
+
+  # Display summary
+  print(results[, c("term", "estimate", "std.error", "statistic", "p.value", "stars")])
+}
+
+
+```
+
+
+### How does each learning behavior predict performance under the human condition only? ##
+
+
+```{r}
+# Subset data to human-only condition
+human_df <- df %>% filter(Condition == "Human")
+
+# Define predictors (excluding Performance variables)
+predictors <- c(
+  "Affect_Positive", "Affect_Negative",
+  "Communication_with_Instructor", "Communication_with_Instructor_Prompted",
+  "Communication_with_Therapist", "Communication_with_Indeterminent",
+  "Engagement_OnTarget", "Engagement_Therapist", "Engagement_OffTarget"
+)
+
+# Response variable
+response <- "Performance_Positive"
+
+# Loop through predictors to model their effect on performance
+for (pred in predictors) {
+  cat("\n==============================\n")
+  cat("Predictor:", pred, "=>", response, "\n")
+
+  # Define formula
+  form <- as.formula(paste(response, "~", pred, "+ VBMAPP + time_c + (1 | Subject)"))
+
+  # Fit model
+  model <- glmmTMB(form, data = human_df, family = beta_family())
+
+  # Tidy output
+  results <- broom.mixed::tidy(model, effects = "fixed")
+  results$stars <- sapply(results$p.value, sig_stars)
+
+  # Display summary
+  print(results[, c("term", "estimate", "std.error", "statistic", "p.value", "stars")])
+}
+
+```
+
+
+
+---
+
+### Summary of Results
+
+#### Table 1. Predictive Effects of Learning Behaviors on Performance (Robot Condition)
+
+| Predictor                             | Estimate | Std. Error | z-value | p-value | Significance |
+|--------------------------------------|----------|------------|---------|---------|--------------|
+| Affect_Positive                      | -3.09    | 2.13       | -1.45   | 0.148   |              |
+| Affect_Negative                      | -4.11    | 7.72       | -0.53   | 0.594   |              |
+| Communication_with_Instructor       | -4.91    | 2.19       | -2.25   | 0.0247  | *            |
+| Communication_with_Instructor_Prompted | 6.32 | 23.9       | 0.26    | 0.792   |              |
+| Communication_with_Therapist        | -3.60    | 2.81       | -1.28   | 0.200   |              |
+| Communication_with_Indeterminent    | -4.52    | 3.19       | -1.42   | 0.156   |              |
+| Engagement_OnTarget                 | -0.07    | 2.71       | -0.03   | 0.979   |              |
+| Engagement_Therapist                | -0.83    | 5.49       | -0.15   | 0.880   |              |
+| Engagement_OffTarget                | 0.85     | 3.80       | 0.22    | 0.824   |              |
+
+#### Interpretation – Robot Condition
+
+- **Only one behavior**, `Communication_with_Instructor`, significantly predicted performance (*p* = 0.025). Interestingly, the relationship was **negative**, suggesting that more communication with the robot instructor might be linked to **lower** performance. This could be due to the child's reliance on prompts or social behavior not aligning with task success.
+- All other behaviors were not significantly predictive of performance in the robot-led sessions, indicating either weaker or non-existent associations in this context.
+
+---
+
+#### Table 2. Predictive Effects of Learning Behaviors on Performance (Human Condition)
+
+| Predictor                             | Estimate | Std. Error | z-value | p-value | Significance |
+|--------------------------------------|----------|------------|---------|---------|--------------|
+| Affect_Positive                      | -0.43    | 2.42       | -0.18   | 0.860   |              |
+| Affect_Negative                      | 22.0     | 8.45       | 2.60    | 0.009   | **           |
+| Communication_with_Instructor       | 5.89     | 2.64       | 2.23    | 0.026   | *            |
+| Communication_with_Instructor_Prompted | 6.12  | 7.97       | 0.77    | 0.443   |              |
+| Communication_with_Therapist        | -3.00    | 1.71       | -1.75   | 0.080   | .            |
+| Communication_with_Indeterminent    | -0.22    | 2.65       | -0.08   | 0.934   |              |
+| Engagement_OnTarget                 | 1.83     | 1.00       | 1.82    | 0.068   | .            |
+| Engagement_Therapist                | -0.57    | 4.13       | -0.14   | 0.891   |              |
+| Engagement_OffTarget                | -2.25    | 1.10       | -2.05   | 0.040   | *            |
+
+#### Interpretation – Human Condition
+
+- **Affect_Negative** had a **strong positive association** with performance (*p* < 0.01). This counterintuitive finding may suggest that children expressing frustration or difficulty were **engaging with the task**, potentially improving with guidance.
+- **Communication_with_Instructor** was also positively predictive (*p* = 0.026), contrasting with its negative effect under the robot condition. This may highlight the natural fluidity and effectiveness of human-led interactions.
+- **Engagement_OffTarget** significantly predicted **lower** performance (*p* = 0.040), as expected.
+- Marginal trends were observed for `Engagement_OnTarget` (*p* = 0.068) and `Communication_with_Therapist` (*p* = 0.080), suggesting potential relevance with larger samples.
+
+---
+
+### Comparative Insights
+
+- **Communication_with_Instructor** showed opposite effects:
+  - **Negative** under robot instruction (*p* = 0.025)
+  - **Positive** under human instruction (*p* = 0.026)  
+  This suggests that while human instructors likely foster meaningful instructional interactions, interactions with the robot may signal confusion, prompting, or a lack of task engagement.
+
+- **Affect_Negative** was **positively predictive** of performance only under the **human** condition. This may reflect effective human responses to emotional cues, adjusting support to improve performance.
+
+- None of the **Engagement metrics** significantly predicted performance in robot-led sessions. However, `Engagement_OffTarget` was **negatively associated** with performance under human instruction (*p* = 0.040), aligning with expectations.
+
+- Across all models, **VB-MAPP score** was a **strong and consistent positive predictor** of performance (*p* < 0.01), validating the role of developmental ability.
+
+---

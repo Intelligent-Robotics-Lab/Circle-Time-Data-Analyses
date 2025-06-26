@@ -124,6 +124,15 @@ epsilon <- 0.0001
 df$Affect_Positive <- (df$Affect_Positive * (nrow(df) - 1) + epsilon) / nrow(df)
 
 
+model0 <- glmmTMB(
+  Affect_Positive ~ Condition + time + (1 | Subject),
+  data = df,
+  family = beta_family()
+)
+
+summary(model0)
+
+
 model <- glmmTMB(
   Affect_Positive ~ Condition + time + VBMAPP + (1 | Subject),
   data = df,
@@ -133,13 +142,43 @@ model <- glmmTMB(
 summary(model)
 
 model_interaction <- glmmTMB(
-  Affect_Positive ~ Condition * VBMAPP + time + (1 | Subject),
+  Affect_Positive ~ Condition * VBMAPP + Condition * time + (1 | Subject),
   data = df,
   family = beta_family()
 )
 
 
 summary(model_interaction)
+
+
+
+library(glmmTMB)
+library(ggeffects)
+library(ggplot2)
+
+# Fit the interaction model
+model <- glmmTMB(
+  Affect_Positive ~ Condition * VBMAPP + Condition * time + (1 | Subject),
+  data = df,
+  family = beta_family()
+)
+
+# Get predicted values
+pred <- ggpredict(model, terms = c("VBMAPP", "Condition"))  # marginal effects
+
+# Plot
+ggplot(pred, aes(x = x, y = predicted, color = group)) +
+  geom_line(size = 1.3) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = group), alpha = 0.2, color = NA) +
+  labs(
+    x = "VB-MAPP Score",
+    y = "Predicted Positive Affect",
+    color = "Instructor",
+    fill = "Instructor",
+    title = "Interaction Effect of VB-MAPP and Instructor Type on Positive Affect"
+  ) +
+  theme_minimal(base_size = 14)
+
 
 ```
 Positive affect was significantly higher during robot-led sessions (β = 0.435, *p* = .0039), suggesting that robots may enhance emotional engagement. Neither session time (β = -0.078, *p* = .238) nor VB-MAPP score (β = -2.663, *p* = .138) significantly predicted positive affect, indicating that this emotional response was broadly distributed across ability levels and consistent across sessions.

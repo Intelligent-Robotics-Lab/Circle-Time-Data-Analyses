@@ -107,7 +107,6 @@ In order to investigate the research questions, we analyze the data from childre
 
 
 ```{r}
-
 library(glmmTMB)
 library(performance)
 library(DHARMa)
@@ -149,11 +148,11 @@ for (var in vars) {
   cat("Behavior:", var, "\n")
 
   # Additive model
-  form_add <- as.formula(paste0(var, " ~ Condition + time_c + VBMAPP + (1 | Subject)"))
-  model1 <- glmmTMB(form_add, data = df, family = beta_family())
+#  form_add <- as.formula(paste0(var, " ~ Condition + time_c + VBMAPP + (1 | Subject)"))
+# model1 <- glmmTMB(form_add, data = df, family = beta_family())
 
   # Interaction model
-  form_int <- as.formula(paste0(var, " ~ Condition * time_c + VBMAPP + (1 | Subject)"))
+  form_int <- as.formula(paste0(var, " ~ Condition * time_c + Condition * VBMAPP + (1 | Subject)"))
   model2 <- glmmTMB(form_int, data = df, family = beta_family())
 
   # Tidy output with significance

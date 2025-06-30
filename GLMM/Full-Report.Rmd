@@ -345,127 +345,10 @@ for (metric in metrics) {
   This suggests that children expressed more positive emotional behaviors (e.g., smiling, clapping) during robot sessions.
   
 
-```{r radar-plot-affect-positive, message=FALSE, warning=FALSE, fig.width=6, fig.height=6}
-# Install and load fmsb
-if (!requireNamespace("fmsb", quietly = TRUE)) {
-  install.packages("fmsb")
-}
-library(fmsb)
-library(dplyr)
-library(tidyr)
-
-# Load your dataset
-df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
-
-# Ensure Condition is labeled properly
-df$Condition <- factor(df$Condition, levels = c(1, 2), labels = c("Human", "Robot"))
-df$time_c <- scale(df$time, center = TRUE, scale = FALSE)
-
-# Compute mean Affect_Positive per participant per condition
-avg_affect <- df %>%
-  group_by(Subject, Condition) %>%
-  summarise(Affect_Positive = mean(Affect_Positive, na.rm = TRUE), .groups = "drop") %>%
-  pivot_wider(names_from = Condition, values_from = Affect_Positive)
-
-# Sort by Subject ID
-avg_affect <- avg_affect[order(avg_affect$Subject), ]
-
-# Extract values
-human <- avg_affect$Human
-robot <- avg_affect$Robot
-subjects <- avg_affect$Subject
-
-# Create data frame for radar chart
-data <- as.data.frame(rbind(
-  rep(1, length(human)),  # max
-  rep(0, length(human)),  # min
-  human,
-  robot
-))
-colnames(data) <- subjects
-rownames(data) <- c("Max", "Min", "Human", "Robot")
-
-# Plot radar chart
-radarchart(data,
-  axistype = 1,
-  pcol = c("blue", "red"),
-  pfcol = c(rgb(0, 0, 1, 0.3), rgb(1, 0, 0, 0.3)),
-  plwd = 2,
-  plty = 1,
-  cglcol = "grey",
-  cglty = 1,
-  axislabcol = "grey",
-  vlcex = 0.8,
-  title = "Affect_Positive by Participant: Human (blue) vs. Robot (red)"
-)
-```
-
-
-
-
-
-  
-  
-
 - **Negative Affect** did not differ significantly between conditions:  
   *β = 0.200, SE = 0.289, z = 0.69, p = 0.489*
   
  
- 
-```{r radar-plot-affect-negative, message=FALSE, warning=FALSE, fig.width=6, fig.height=6}
-# Install and load fmsb
-if (!requireNamespace("fmsb", quietly = TRUE)) {
-  install.packages("fmsb")
-}
-library(fmsb)
-library(dplyr)
-library(tidyr)
-
-# Load your dataset
-df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
-
-# Ensure Condition is labeled properly
-df$Condition <- factor(df$Condition, levels = c(1, 2), labels = c("Human", "Robot"))
-df$time_c <- scale(df$time, center = TRUE, scale = FALSE)
-
-# Compute mean Affect_Positive per participant per condition
-avg_affect <- df %>%
-  group_by(Subject, Condition) %>%
-  summarise(Affect_Negative = mean(Affect_Negative, na.rm = TRUE), .groups = "drop") %>%
-  pivot_wider(names_from = Condition, values_from = Affect_Negative)
-
-# Sort by Subject ID
-avg_affect <- avg_affect[order(avg_affect$Subject), ]
-
-# Extract values
-human <- avg_affect$Human
-robot <- avg_affect$Robot
-subjects <- avg_affect$Subject
-
-# Create data frame for radar chart
-data <- as.data.frame(rbind(
-  rep(1, length(human)),  # max
-  rep(0, length(human)),  # min
-  human,
-  robot
-))
-colnames(data) <- subjects
-rownames(data) <- c("Max", "Min", "Human", "Robot")
-
-# Plot radar chart
-radarchart(data,
-  axistype = 1,
-  pcol = c("blue", "red"),
-  pfcol = c(rgb(0, 0, 1, 0.3), rgb(1, 0, 0, 0.3)),
-  plwd = 2,
-  plty = 1,
-  cglcol = "grey",
-  cglty = 1,
-  axislabcol = "grey",
-  vlcex = 0.8,
-  title = "Affect_Negative by Participant: Human (blue) vs. Robot (red)"
-)
-``` 
 
 
 ### Communication
@@ -473,78 +356,9 @@ radarchart(data,
 - **Communication with Instructor** showed no significant difference between conditions:  
   *β = -0.136, SE = 0.131, z = -1.04, p = 0.298*
   
-  
-```{r radar-plot-comm-instructor, message=FALSE, warning=FALSE, fig.width=6, fig.height=6}
-# Install and load fmsb
-if (!requireNamespace("fmsb", quietly = TRUE)) {
-  install.packages("fmsb")
-}
-library(fmsb)
-library(dplyr)
-library(tidyr)
-
-# Load dataset
-df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
-df$Condition <- factor(df$Condition, levels = c(1, 2), labels = c("Human", "Robot"))
-
-# Select variable
-comm_var <- "Communication_with_Instructor"
-
-# Compute mean per participant/condition
-avg_comm <- df %>%
-  group_by(Subject, Condition) %>%
-  summarise(value = mean(.data[[comm_var]], na.rm = TRUE), .groups = "drop") %>%
-  pivot_wider(names_from = Condition, values_from = value)
-
-avg_comm <- avg_comm[order(avg_comm$Subject), ]
-
-# Prepare values
-human <- avg_comm$Human
-robot <- avg_comm$Robot
-subjects <- avg_comm$Subject
-
-data <- as.data.frame(rbind(
-  rep(1, length(human)),
-  rep(0, length(human)),
-  human,
-  robot
-))
-colnames(data) <- subjects
-rownames(data) <- c("Max", "Min", "Human", "Robot")
-
-# Reduce title font size
-oldpar <- par(no.readonly = TRUE)
-par(cex.main = 0.9)  # smaller title font
-
-radarchart(data,
-  axistype = 1,
-  pcol = c("blue", "red"),
-  pfcol = c(rgb(0, 0, 1, 0.3), rgb(1, 0, 0, 0.3)),
-  plwd = 2,
-  plty = 1,
-  cglcol = "grey",
-  cglty = 1,
-  axislabcol = "grey",
-  vlcex = 0.8,
-  title = "Communication with Instructor by Participant: Human (blue) vs. Robot (red)"
-)
-
-par(oldpar)  # reset plotting parameters
-```
-
-
-  
-  
-  
-
 - **Instructor-Prompted Communication** was also not significantly affected:  
   *β = 0.239, SE = 0.313, z = 0.76, p = 0.446*
   
-  
-  
-  
-  
-
 - **Communication with Therapist or Peers** remained similar across conditions:  
   *β = 0.032, SE = 0.226, z = 0.14, p = 0.887*
 
@@ -871,3 +685,14 @@ for (pred in predictors) {
 - Across all models, **VB-MAPP score** was a **strong and consistent positive predictor** of performance (*p* < 0.01), validating the role of developmental ability.
 
 ---
+
+
+# Conclusion
+This study investigated the comparative efficacy of human- versus robot-led group instruction during Circle Time sessions for children with Autism Spectrum Disorder (ASD), using a within-subject longitudinal design. Behavioral data were analyzed across affect, communication, engagement, and task performance dimensions using generalized linear mixed models with beta regression.
+
+Our findings demonstrate that robot-led instruction elicited significantly greater positive affect in children compared to human-led sessions, especially among participants with higher VB-MAPP scores. However, this affective advantage was not mirrored in performance outcomes; children exhibited significantly lower task performance under robot instruction. Notably, robot sessions were also associated with increased communication directed to indeterminate partners and more off-task engagement over time, suggesting possible challenges in maintaining instructional clarity and behavioral focus.
+
+Behavioral predictors of performance diverged markedly between conditions. While communication with the human instructor positively predicted task success, the same behavior under robot instruction was negatively associated with performance—potentially reflecting less effective pedagogical interactions or misaligned social contingencies. Engagement metrics did not significantly predict performance under the robot condition, reinforcing the limited instructional efficacy of the robot in its current design.
+
+These findings highlight the dual role of social robots as emotionally engaging but pedagogically limited agents in early autism interventions. The elevated positive affect may partly reflect a novelty effect, particularly among higher-functioning children, yet this affective engagement did not sustain or enhance learning outcomes. As such, future work should explore adaptive robot behaviors that integrate emotional responsiveness with task-contingent feedback and clearer instructional scaffolding. Designing robot-mediated group instruction that balances engagement with effectiveness is critical for supporting inclusive learning environments for neurodiverse populations.
+

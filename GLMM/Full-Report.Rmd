@@ -268,23 +268,97 @@ for (var in vars) {
 
 To evaluate the effect of instructor type on children's learning behaviors, we fitted additive generalized linear mixed models (GLMMs) with `Condition` (Human vs. Robot) as a fixed effect, controlling for session time (`time_c`) and individual skill level (`VB-MAPP`). A random intercept for `Subject` accounted for repeated measures. All dependent variables were modeled with a beta distribution to account for their bounded, proportional nature. Below we report the estimated effect of the Robot condition (`ConditionRobot`) relative to the Human condition for each behavioral outcome.
 
+First, let's take a look at the hexagonal plots from each metric:
+```{r all-radar-plots, message=FALSE, warning=FALSE, fig.width=6, fig.height=6}
+if (!requireNamespace("fmsb", quietly = TRUE)) install.packages("fmsb")
+library(fmsb)
+library(dplyr)
+library(tidyr)
+
+# Load data
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+df$Condition <- factor(df$Condition, levels = c(1, 2), labels = c("Human", "Robot"))
+
+# List of variables to plot
+metrics <- c(
+  "Affect_Positive", "Affect_Negative",
+  "Communication_with_Instructor", "Communication_with_Instructor_Prompted",
+  "Communication_with_Therapist", "Communication_with_Indeterminent",
+  "Engagement_OnTarget", "Engagement_Therapist", "Engagement_OffTarget",
+  "Performance_Positive"
+)
+
+# Loop through each metric
+for (metric in metrics) {
+  # Compute average by Subject and Condition
+  avg_df <- df %>%
+    group_by(Subject, Condition) %>%
+    summarise(value = mean(.data[[metric]], na.rm = TRUE), .groups = "drop") %>%
+    pivot_wider(names_from = Condition, values_from = value)
+
+  # Skip if incomplete
+  if (any(!c("Human", "Robot") %in% colnames(avg_df))) next
+
+  # Sort for consistency
+  avg_df <- avg_df[order(avg_df$Subject), ]
+  human <- avg_df$Human
+  robot <- avg_df$Robot
+  subjects <- avg_df$Subject
+
+  # Create radar data frame
+  data <- as.data.frame(rbind(
+    rep(1, length(human)),
+    rep(0, length(human)),
+    human,
+    robot
+  ))
+  colnames(data) <- subjects
+  rownames(data) <- c("Max", "Min", "Human", "Robot")
+
+  # Adjust title font size
+  oldpar <- par(no.readonly = TRUE)
+  par(cex.main = 0.9)
+
+  # Plot
+  radarchart(data,
+    axistype = 1,
+    pcol = c("blue", "red"),
+    pfcol = c(rgb(0, 0, 1, 0.3), rgb(1, 0, 0, 0.3)),
+    plwd = 2,
+    plty = 1,
+    cglcol = "grey",
+    cglty = 1,
+    axislabcol = "grey",
+    vlcex = 0.8,
+    title = paste(metric, "by Participant: Human (blue) vs. Robot (red)")
+  )
+
+  par(oldpar)
+}
+```
+
+
 ### Affect
 
 - **Positive Affect** was significantly higher during robot-led instruction compared to human-led instruction:  
   *β = 0.435, SE = 0.151, z = 2.89, p = 0.0039*  
   This suggests that children expressed more positive emotional behaviors (e.g., smiling, clapping) during robot sessions.
+  
 
 - **Negative Affect** did not differ significantly between conditions:  
   *β = 0.200, SE = 0.289, z = 0.69, p = 0.489*
+  
+ 
+
 
 ### Communication
 
 - **Communication with Instructor** showed no significant difference between conditions:  
   *β = -0.136, SE = 0.131, z = -1.04, p = 0.298*
-
+  
 - **Instructor-Prompted Communication** was also not significantly affected:  
   *β = 0.239, SE = 0.313, z = 0.76, p = 0.446*
-
+  
 - **Communication with Therapist or Peers** remained similar across conditions:  
   *β = 0.032, SE = 0.226, z = 0.14, p = 0.887*
 
@@ -417,9 +491,17 @@ Performance_Positive ~ Behavior + VBMAPP + time_c + (1 | Subject)
 This was done independently for the **Robot** and **Human** groups using the `glmmTMB` package in R. The response variable was beta-transformed for appropriate modeling.
 ### How does each learning behavior predict performance under the robot condition only? ##
 
+
 ```{r}
-# Subset data to robot-only condition
+# Create time_c before subsetting
+df$time_c <- scale(df$time, center = TRUE, scale = FALSE)
+
+# Subset robot condition
 robot_df <- df %>% filter(Condition == "Robot")
+
+# ✅ Beta transformation for Performance_Positive
+n <- nrow(robot_df)
+robot_df$Performance_Positive <- (robot_df$Performance_Positive * (n - 1) + 0.5) / n
 
 # Define predictors (excluding Performance variables)
 predictors <- c(
@@ -450,9 +532,49 @@ for (pred in predictors) {
   # Display summary
   print(results[, c("term", "estimate", "std.error", "statistic", "p.value", "stars")])
 }
-
-
 ```
+
+
+
+<!-- ```{r} -->
+<!-- # Add this above robot_df -->
+<!-- df$time_c <- scale(df$time, center = TRUE, scale = FALSE) -->
+
+<!-- # Now safe to subset -->
+<!-- robot_df <- df %>% filter(Condition == "Robot") -->
+
+<!-- # Define predictors (excluding Performance variables) -->
+<!-- predictors <- c( -->
+<!--   "Affect_Positive", "Affect_Negative", -->
+<!--   "Communication_with_Instructor", "Communication_with_Instructor_Prompted", -->
+<!--   "Communication_with_Therapist", "Communication_with_Indeterminent", -->
+<!--   "Engagement_OnTarget", "Engagement_Therapist", "Engagement_OffTarget" -->
+<!-- ) -->
+
+<!-- # Response variable -->
+<!-- response <- "Performance_Positive" -->
+
+<!-- # Loop through predictors to model their effect on performance -->
+<!-- for (pred in predictors) { -->
+<!--   cat("\n==============================\n") -->
+<!--   cat("Predictor:", pred, "=>", response, "\n") -->
+
+<!--   # Define formula -->
+<!--   form <- as.formula(paste(response, "~", pred, "+ VBMAPP + time_c + (1 | Subject)")) -->
+
+<!--   # Fit model -->
+<!--   model <- glmmTMB(form, data = robot_df, family = beta_family()) -->
+
+<!--   # Tidy output -->
+<!--   results <- broom.mixed::tidy(model, effects = "fixed") -->
+<!--   results$stars <- sapply(results$p.value, sig_stars) -->
+
+<!--   # Display summary -->
+<!--   print(results[, c("term", "estimate", "std.error", "statistic", "p.value", "stars")]) -->
+<!-- } -->
+
+
+<!-- ``` -->
 
 
 ### How does each learning behavior predict performance under the human condition only? ##
@@ -461,6 +583,11 @@ for (pred in predictors) {
 ```{r}
 # Subset data to human-only condition
 human_df <- df %>% filter(Condition == "Human")
+
+# ✅ Beta-safe transformation of Performance_Positive
+n_human <- nrow(human_df)
+human_df$Performance_Positive <- (human_df$Performance_Positive * (n_human - 1) + 0.5) / n_human
+
 
 # Define predictors (excluding Performance variables)
 predictors <- c(
@@ -558,3 +685,14 @@ for (pred in predictors) {
 - Across all models, **VB-MAPP score** was a **strong and consistent positive predictor** of performance (*p* < 0.01), validating the role of developmental ability.
 
 ---
+
+
+# Conclusion
+This study investigated the comparative efficacy of human- versus robot-led group instruction during Circle Time sessions for children with Autism Spectrum Disorder (ASD), using a within-subject longitudinal design. Behavioral data were analyzed across affect, communication, engagement, and task performance dimensions using generalized linear mixed models with beta regression.
+
+Our findings demonstrate that robot-led instruction elicited significantly greater positive affect in children compared to human-led sessions, especially among participants with higher VB-MAPP scores. However, this affective advantage was not mirrored in performance outcomes; children exhibited significantly lower task performance under robot instruction. Notably, robot sessions were also associated with increased communication directed to indeterminate partners and more off-task engagement over time, suggesting possible challenges in maintaining instructional clarity and behavioral focus.
+
+Behavioral predictors of performance diverged markedly between conditions. While communication with the human instructor positively predicted task success, the same behavior under robot instruction was negatively associated with performance—potentially reflecting less effective pedagogical interactions or misaligned social contingencies. Engagement metrics did not significantly predict performance under the robot condition, reinforcing the limited instructional efficacy of the robot in its current design.
+
+These findings highlight the dual role of social robots as emotionally engaging but pedagogically limited agents in early autism interventions. The elevated positive affect may partly reflect a novelty effect, particularly among higher-functioning children, yet this affective engagement did not sustain or enhance learning outcomes. As such, future work should explore adaptive robot behaviors that integrate emotional responsiveness with task-contingent feedback and clearer instructional scaffolding. Designing robot-mediated group instruction that balances engagement with effectiveness is critical for supporting inclusive learning environments for neurodiverse populations.
+

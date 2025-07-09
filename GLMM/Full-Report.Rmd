@@ -951,3 +951,187 @@ Behavioral predictors of performance diverged markedly between conditions. While
 
 These findings highlight the dual role of social robots as emotionally engaging but pedagogically limited agents in early autism interventions. The elevated positive affect may partly reflect a novelty effect, particularly among higher-functioning children, yet this affective engagement did not sustain or enhance learning outcomes. As such, future work should explore adaptive robot behaviors that integrate emotional responsiveness with task-contingent feedback and clearer instructional scaffolding. Designing robot-mediated group instruction that balances engagement with effectiveness is critical for supporting inclusive learning environments for neurodiverse populations.
 
+
+```{r performance-predictors, message=FALSE, warning=FALSE}
+library(glmmTMB)
+library(broom.mixed)
+library(ggplot2)
+library(dplyr)
+
+# Make sure figures directory exists
+if (!dir.exists("figs")) dir.create("figs")
+
+# Add centered time variable
+df$time_c <- scale(df$time, center = TRUE, scale = FALSE)
+
+# Define response and predictors
+response <- "Performance_Positive"
+predictors <- c(
+  "Affect_Positive", "Affect_Negative",
+  "Communication_with_Instructor", "Communication_with_Instructor_Prompted",
+  "Communication_with_Therapist", "Communication_with_Indeterminent",
+  "Engagement_OnTarget", "Engagement_Therapist", "Engagement_OffTarget"
+)
+
+# Define a function to add significance stars
+sig_stars <- function(p) {
+  if (is.na(p)) return("")
+  if (p < 0.001) return("***")
+  else if (p < 0.01) return("**")
+  else if (p < 0.05) return("*")
+  else if (p < 0.1) return(".")
+  else return("")
+}
+
+# Function to model and plot per condition
+analyze_condition <- function(df_cond, cond_label) {
+  # Beta transformation of response
+  n <- nrow(df_cond)
+  df_cond[[response]] <- (df_cond[[response]] * (n - 1) + 0.5) / n
+  
+  for (pred in predictors) {
+    form <- as.formula(paste(response, "~", pred, "+ VBMAPP + time_c + (1 | Subject)"))
+    model <- glmmTMB(form, data = df_cond, family = beta_family())
+    results <- broom.mixed::tidy(model, effects = "fixed")
+    results$stars <- sapply(results$p.value, sig_stars)
+
+    cat("\n====================\n")
+    cat("Condition:", cond_label, "| Predictor:", pred, "\n")
+    print(results[, c("term", "estimate", "std.error", "statistic", "p.value", "stars")])
+    
+    # Generate predictions for plotting
+    new_data <- expand.grid(
+      pred_val = seq(min(df_cond[[pred]], na.rm = TRUE), max(df_cond[[pred]], na.rm = TRUE), length.out = 100),
+      VBMAPP = mean(df_cond$VBMAPP, na.rm = TRUE),
+      time_c = 0,
+      Subject = NA
+    )
+    colnames(new_data)[1] <- pred
+    
+    preds <- predict(model, newdata = new_data, type = "response", se.fit = TRUE)
+    new_data$predicted <- preds$fit
+    new_data$lower <- preds$fit - 1.96 * preds$se.fit
+    new_data$upper <- preds$fit + 1.96 * preds$se.fit
+
+    # Create plot
+    p <- ggplot(new_data, aes_string(x = pred, y = "predicted")) +
+      geom_line(color = "black") +
+      geom_ribbon(aes(ymin = lower, ymax = upper), fill = "gray70", alpha = 0.3) +
+      labs(
+        x = gsub("_", " ", pred),
+        y = "Predicted Performance"
+      ) +
+      theme_minimal(base_size = 10) +
+      theme(
+        plot.title = element_blank(),
+        axis.title = element_text(size = 9),
+        axis.text = element_text(size = 8),
+        legend.position = "none"
+      )
+
+    # Save to PDF
+    pdf_file <- paste0("figs/predictor_", pred, "_", cond_label, ".pdf")
+    ggsave(pdf_file, plot = p, width = 6, height = 4)
+
+    # Print inline
+    print(p)
+  }
+}
+
+# Run analysis separately for Human and Robot
+analyze_condition(df %>% filter(Condition == "Human"), "Human")
+analyze_condition(df %>% filter(Condition == "Robot"), "Robot")
+```
+
+
+```{r}
+
+library(glmmTMB)
+library(broom.mixed)
+library(ggplot2)
+library(dplyr)
+
+# Load dataset (adjust path as needed)
+df <- read.csv("~/GitHub/Circle-Time-Data-Analyses/CircleTimeData-VBMAPP.csv")
+
+# Ensure output folder exists
+if (!dir.exists("figs")) dir.create("figs")
+
+# Convert condition to factor and center time
+df$Condition <- factor(df$Condition, levels = c(1, 2), labels = c("Human", "Robot"))
+df$time_c <- scale(df$time, center = TRUE, scale = FALSE)
+
+# Response and predictors
+response <- "Performance_Positive"
+predictors <- c(
+  "Affect_Positive", "Affect_Negative",
+  "Communication_with_Instructor", "Communication_with_Instructor_Prompted",
+  "Communication_with_Therapist", "Communication_with_Indeterminent",
+  "Engagement_OnTarget", "Engagement_Therapist", "Engagement_OffTarget"
+)
+
+# Significance star function
+sig_stars <- function(p) {
+  if (is.na(p)) return("")
+  if (p < 0.001) return("***")
+  else if (p < 0.01) return("**")
+  else if (p < 0.05) return("*")
+  else if (p < 0.1) return(".")
+  else return("")
+}
+
+# Beta transform
+n <- nrow(df)
+df[[response]] <- (df[[response]] * (n - 1) + 0.5) / n
+
+# Loop through predictors
+for (pred in predictors) {
+  form <- as.formula(paste(response, "~", pred, "* Condition + VBMAPP + time_c + (1 | Subject)"))
+  model <- glmmTMB(form, data = df, family = beta_family())
+  results <- broom.mixed::tidy(model, effects = "fixed")
+  results$stars <- sapply(results$p.value, sig_stars)
+
+  cat("\n====================\n")
+  cat("Predictor:", pred, "\n")
+  print(results[, c("term", "estimate", "std.error", "statistic", "p.value", "stars")])
+
+  # Prediction data
+  new_data <- expand.grid(
+    pred_val = seq(min(df[[pred]], na.rm = TRUE), max(df[[pred]], na.rm = TRUE), length.out = 100),
+    Condition = factor(c("Human", "Robot"), levels = c("Human", "Robot")),
+    VBMAPP = mean(df$VBMAPP, na.rm = TRUE),
+    time_c = 0,
+    Subject = NA
+  )
+  colnames(new_data)[1] <- pred
+
+  preds <- predict(model, newdata = new_data, type = "response", se.fit = TRUE)
+  new_data$predicted <- preds$fit
+  new_data$lower <- preds$fit - 1.96 * preds$se.fit
+  new_data$upper <- preds$fit + 1.96 * preds$se.fit
+
+  # Combined plot
+  p <- ggplot(new_data, aes_string(x = pred, y = "predicted", color = "Condition", fill = "Condition")) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2, color = NA) +
+    labs(
+      x = gsub("_", " ", pred),
+      y = "Predicted Performance"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      plot.title = element_blank(),
+      axis.title = element_text(size = 12),
+      axis.text = element_text(size = 12),
+      legend.title = element_text(size = 12),
+      legend.text = element_text(size = 12)
+    )
+
+  pdf_file <- paste0("figs/predictor_", pred, "_combined.pdf")
+  ggsave(pdf_file, plot = p, width = 6, height = 4)
+
+  print(p)
+}
+
+```
+

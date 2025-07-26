@@ -1135,3 +1135,12 @@ for (pred in predictors) {
 
 ```
 
+# Conclusion
+
+This study presents a rigorous, behaviorally grounded evaluation of robot-mediated instruction during Circle Time sessions for children with Autism Spectrum Disorder. By combining detailed video-coded observations with advanced GLMM modeling, we assessed the emotional, communicative, attentional, and task performance dimensions of learning in both human- and robot-led conditions.
+
+The results illustrate a nuanced picture: while the social robot elicited significantly higher levels of positive affect—particularly among children with stronger developmental profiles—this emotional benefit did not translate into improved learning outcomes. In fact, robot-led sessions were associated with lower task performance, more ambiguous communication patterns, and a progressive increase in off-task behaviors. The behavioral predictors of performance also diverged between conditions, with only human-led sessions showing the expected associations between engagement, communication, and task success.
+
+These findings underscore the promise and limitations of current social robots in real-world educational settings. While emotionally engaging and potentially useful for motivational purposes, the robot’s current instructional capabilities fall short in supporting sustained learning, particularly in structured, outcome-driven group activities like Circle Time. Moving forward, effective robot-mediated instruction will require not only engaging personalities but also adaptive, context-sensitive teaching strategies that can respond to children's affective states and learning needs in real time. This work provides a foundation for such advances, pointing to specific behavioral markers and moderation effects that can guide future design and personalization of social robotic tutors in autism intervention.
+
+
